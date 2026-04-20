@@ -1,0 +1,7 @@
+{
+  "name": "sistema-patentes-permisos",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react-vite"
+}
