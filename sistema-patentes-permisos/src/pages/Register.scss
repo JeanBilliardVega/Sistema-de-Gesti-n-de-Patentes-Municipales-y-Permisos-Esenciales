@@ -1,0 +1,96 @@
+@use './Login.scss';
+
+.register-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100%;
+  padding: 2rem 1rem;
+}
+
+.register-background {
+  --background: #f4f7f9;
+}
+
+.register-card {
+  width: 100%;
+  max-width: 800px;
+  background: #ffffff;
+  border-top: 4px solid var(--ion-color-primary);
+  border-radius: 4px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1) !important;
+  margin: 0;
+}
+
+.select-item-gob {
+  --background: transparent;
+  --padding-start: 0;
+  --inner-padding-end: 0;
+  --border-style: none;
+  margin-top: 8px;
+
+  ion-label {
+    font-weight: 600;
+    color: var(--ion-color-tertiary) !important;
+    font-size: 0.9rem !important;
+    margin-bottom: 8px !important;
+    transform: none !important;
+  }
+
+  ion-select {
+    width: 100%;
+    border: 1px solid #ced4da;
+    border-radius: 4px;
+    padding: 12px;
+    --placeholder-color: #6c757d;
+    --placeholder-opacity: 1;
+    font-size: 0.95rem;
+    background: #fff;
+  }
+}
+
+.terms-container {
+  margin: 1.5rem 0;
+  padding: 0 8px;
+
+  ion-checkbox {
+    --size: 18px;
+    --border-radius: 4px;
+    --checkbox-background-checked: var(--ion-color-primary);
+    font-size: 0.9rem;
+
+    p {
+      margin: 0;
+      color: var(--ion-color-secondary);
+      line-height: 1.4;
+    }
+  }
+}
+
+.err-text {
+  font-size: 0.75rem;
+  color: var(--ion-color-danger, #dc3545);
+  margin-top: 4px;
+  margin-left: 2px;
+  display: block;
+}
+
+.no-padding {
+  --ion-grid-column-padding: 8px;
+}
+
+@media (max-width: 768px) {
+  .register-card {
+    max-width: 450px;
+  }
+
+  .register-container {
+    padding: 1rem;
+  }
+}
+
+.register-card-header {
+  @extend .login-card-header;
+  padding-bottom: 0.5rem;
+}

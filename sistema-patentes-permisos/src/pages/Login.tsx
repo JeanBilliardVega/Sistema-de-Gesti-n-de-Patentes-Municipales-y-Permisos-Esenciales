@@ -1,20 +1,7 @@
-import React, { useState } from "react";
-import { useHistory } from "react-router-dom"; // Ionic usa React Router
-import { 
-  IonPage, 
-  IonContent, 
-  IonCard, 
-  IonCardHeader, 
-  IonCardTitle, 
-  IonCardSubtitle, 
-  IonCardContent, 
-  IonInput, 
-  IonButton, 
-  IonIcon, 
-  IonText,
-  IonItem
-} from "@ionic/react";
-import { businessOutline, shieldCheckmarkOutline, eyeOutline, eyeOffOutline } from "ionicons/icons";
+import { useState } from "react";
+import { useHistory } from "react-router-dom";
+import { IonPage, IonContent, IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent, IonInput, IonButton, IonIcon} from "@ionic/react";
+import { eyeOutline, eyeOffOutline } from "ionicons/icons";
 import './Login.scss';
 
 const Login: React.FC = () => {
@@ -115,7 +102,7 @@ const Login: React.FC = () => {
 
                                 <div className="form-links ion-text-center ion-margin-top">
                                     <small>¿No estás registrado? </small>
-                                    <a href="#" onClick={(e) => { e.preventDefault(); history.push("/register"); }}>
+                                    <a href="#" onClick={(e) => { e.preventDefault(); history.push("/registrar"); }}>
                                     Haz click aquí
                                     </a>
                                 </div>
