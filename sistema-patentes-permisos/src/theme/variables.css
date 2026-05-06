@@ -1,2 +1,45 @@
 /* For information on how to create your own theme, please refer to:
 http://ionicframework.com/docs/theming/ */
+
+:root {
+    --ion-color-primary: #66C4FF;
+    --ion-color-secundary: #54595F;
+    --ion-color-tertiary: #0A132D;
+    --ion-color-accent: #1F49E0;
+    --ion-color-body-text: #7A7A7A;
+    --ion-color-p-text: #4a4a4a;
+    --ion-color-a-text: #111;
+    --ion-color-small-text: #212529;
+    
+    /*Fuentes*/
+    --font-body: 'Roboto', sans-serif;
+    --font-header: 'Roboto Slab', sans-serif;
+
+    /*Tamano de fuente*/
+    --font-size-h1: 2.4rem;
+    --font-size-h2: 1.6875rem;
+    --font-size-h3: 1.4375rem;
+    --font-size-h4: 1.25rem;
+    --font-size-h5: 1.25rem;
+    --font-size-h6: 1.125rem;
+    --font-size-body: 1rem;
+    --font-size-p: 1rem;
+    --font-size-a: 1rem;
+    --font-size-small: 0.6875rem;
+    --font-size-cita: 1rem;
+
+    /*Ancho de la fuente*/
+    /*Tamano de fuente*/
+    --font-weight-general: 400;
+    --font-weight-h1: 400;
+    --font-weight-h2: 400;
+    --font-weight-h3: 400;
+    --font-weight-h4: 400;
+    --font-weight-h5: 400;
+    --font-weight-h6: 400;
+    --font-weight-body: 400;
+    --font-weight-p: 400;
+    --font-weight-a: 400;
+    --font-weight-small: 400;
+    --font-weight-cita: 400;
+}
