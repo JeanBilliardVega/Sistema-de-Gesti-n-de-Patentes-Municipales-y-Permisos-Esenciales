@@ -51,3 +51,35 @@ Esto afecta directamente la economía local, desincentiva el emprendimiento y ge
 
 ---
 
+# Sistema de Patentes y Permisos
+
+## Requisitos
+
+- Tener instalado [Node.js](https://nodejs.org/)
+- Usar [WebStorm](https://www.jetbrains.com/webstorm/) o [Visual Studio Code](https://code.visualstudio.com/)
+
+## Pasos para ejecutar la aplicación
+
+1. **Descargar el repositorio y extraerlo** en tu computadora.
+2. **Cambiar la terminal de PowerShell a CMD (Command Prompt)**.
+3. Abrir la terminal y ejecutar:
+```
+
+cd sistema-patentes-permisos
+
+```
+4. Instalar Ionic CLI de manera global:
+```
+
+npm install -g @ionic/cli
+
+```
+5. Ejecutar la aplicación:
+```
+
+ionic serve
+
+```
+6. **Paso opcional (solo si no tienes Vite instalado):**  
+Durante la ejecución, si te pregunta si deseas instalar Vite, selecciona **Yes** y espera a que termine la instalación.
+7. ¡Listo! Ahora puedes usar la aplicación en tu navegador.
