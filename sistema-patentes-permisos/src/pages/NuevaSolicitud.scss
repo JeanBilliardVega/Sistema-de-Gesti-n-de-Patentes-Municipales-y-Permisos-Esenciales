@@ -1,0 +1,202 @@
+.form-bg {
+  --background: #f4f7f9;
+}
+
+.solicitud-toolbar {
+  --padding-top: 8px;
+  --padding-bottom: 8px;
+  font-weight: 600;
+  font-size: 1.2rem;
+
+  .btn-cancelar-header {
+    text-transform: none;
+    font-weight: 400;
+    color: rgba(255, 255, 255, 0.8);
+  }
+}
+
+.form-wrapper {
+  max-width: 800px;
+  margin: 0 auto; /* Centrar en pantallas grandes */
+}
+
+.form-card {
+  margin: 0 0 24px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+  border-radius: 8px;
+
+  ion-card-title {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #111827;
+  }
+
+  ion-card-subtitle {
+    margin-top: 4px;
+    font-size: 0.85rem;
+    color: #6b7280;
+    text-transform: none;
+  }
+}
+
+/* Diseño del área de entrada del formulario */
+.custom-form-grid {
+  --ion-grid-column-padding: 8px;
+}
+
+.input-group {
+  margin-bottom: 8px;
+
+  ion-input, ion-select, ion-textarea {
+    --border-radius: 6px;
+    --border-color: #e5e7eb;
+    --background: #f9fafb;
+    --padding-start: 12px;
+
+    &::part(label) {
+      font-weight: 600;
+      color: #374151;
+      margin-bottom: 8px;
+      font-size: 0.9rem;
+    }
+  }
+
+  .error-msg {
+    font-size: 0.75rem;
+    margin-top: 4px;
+    display: block;
+    padding-left: 4px;
+  }
+}
+
+/* Zona de subida de archivos (borde discontinuo) */
+.upload-zone {
+  border: 2px dashed #d1d5db;
+  border-radius: 8px;
+  padding: 32px 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  margin-bottom: 20px;
+
+  &:hover {
+    border-color: #60a5fa;
+    background-color: #f8fafc;
+  }
+
+  .upload-icon-wrapper {
+    width: 64px;
+    height: 64px;
+    background-color: #e0f2fe;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 16px auto;
+
+    ion-icon {
+      font-size: 32px;
+      color: #2563eb;
+    }
+  }
+
+  .upload-text {
+    font-size: 1rem;
+    color: #374151;
+    margin: 0 0 8px 0;
+    .text-blue { color: #2563eb; font-weight: 600; }
+  }
+
+  .upload-hint {
+    font-size: 0.75rem;
+    color: #6b7280;
+    margin: 0;
+  }
+}
+
+/* Cuadro de información de documentos requeridos */
+.required-docs-box {
+  background-color: #eff6ff;
+  border: 1px solid #bfdbfe;
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 20px;
+
+  .docs-title {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #1e3a8a;
+    margin: 0 0 10px 0;
+  }
+
+  .docs-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+
+    li {
+      display: flex;
+      align-items: center;
+      font-size: 0.85rem;
+      color: #374151;
+      margin-bottom: 6px;
+
+      ion-icon {
+        color: #2563eb;
+        margin-right: 8px;
+        font-size: 16px;
+      }
+    }
+  }
+}
+
+/* Sección de archivos subidos */
+.uploaded-files-section {
+  margin-top: 16px;
+
+  .files-header {
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: #374151;
+    display: block;
+    margin-bottom: 12px;
+  }
+
+  .files-list {
+    background: transparent;
+    padding: 0;
+
+    .file-item {
+      --background: #f9fafb;
+      --border-color: #e5e7eb;
+      --border-width: 1px;
+      --border-radius: 8px;
+      margin-bottom: 8px;
+
+      .file-icon { color: #2563eb; font-size: 24px; }
+      h2 { font-size: 0.9rem; font-weight: 500; color: #111827; }
+      p { font-size: 0.75rem; color: #6b7280; }
+    }
+  }
+}
+
+/* Botones de acción inferiores */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-bottom: 40px;
+
+  .btn-action {
+    text-transform: none;
+    font-weight: 600;
+    min-width: 140px;
+  }
+}
+
+@media (max-width: 576px) {
+  .form-actions {
+    flex-direction: column;
+    .btn-action { width: 100%; }
+  }
+}

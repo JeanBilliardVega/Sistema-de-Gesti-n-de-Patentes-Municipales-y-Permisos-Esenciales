@@ -1,0 +1,227 @@
+.seguimiento-bg {
+  --background: #f4f7f9;
+}
+
+.seguimiento-toolbar {
+  --padding-top: 8px;
+  --padding-bottom: 8px;
+  font-weight: 600;
+  font-size: 1.2rem;
+}
+
+/* 4 tarjetas pequeñas de estadísticas en la parte superior */
+.stat-card {
+  margin: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+  border-radius: 8px;
+
+  .stat-label {
+    font-size: 0.85rem;
+    color: #6b7280;
+    margin: 0 0 8px 0;
+  }
+
+  .stat-value-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    h2 {
+      margin: 0;
+      font-size: 1.8rem;
+      font-weight: 600;
+      color: #111827;
+      &.text-blue { color: #2563eb; }
+      &.text-green { color: #16a34a; }
+      &.text-orange { color: #f59e0b; }
+    }
+
+    ion-icon {
+      font-size: 1.8rem;
+      &.icon-gray { color: #9ca3af; }
+      &.icon-blue { color: #60a5fa; }
+      &.icon-green { color: #4ade80; }
+      &.icon-orange { color: #fbbf24; }
+    }
+  }
+}
+
+/* Tarjeta principal del contenedor de la lista */
+.list-container-card {
+  margin: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+  border-radius: 8px;
+
+  .list-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    border-bottom: 1px solid #f3f4f6;
+    padding-bottom: 16px;
+  }
+
+  .filter-wrapper {
+    display: flex;
+    align-items: center;
+    background: #f3f4f6;
+    padding: 4px 12px;
+    border-radius: 6px;
+
+    .filter-icon {
+      color: #6b7280;
+      margin-right: 8px;
+    }
+
+    .status-filter {
+      min-width: 140px;
+    }
+  }
+}
+
+/* Recreación precisa de los elementos de la lista */
+.requests-list {
+  padding-top: 16px;
+
+  .request-card-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    transition: background-color 0.2s;
+
+    &:hover {
+      background-color: #f9fafb;
+    }
+
+    /* Izquierda: Información */
+    .req-info {
+      display: flex;
+      align-items: flex-start;
+      flex: 1;
+      min-width: 250px;
+
+      .req-icon-box {
+        width: 42px;
+        height: 42px;
+        background: #f3f4f6;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-right: 12px;
+        ion-icon { font-size: 20px; color: #4b5563; }
+      }
+
+      .req-text {
+        h4 { margin: 0 0 4px 0; font-size: 1.05rem; font-weight: 600; color: #111827; }
+        p { margin: 0; font-size: 0.85rem; color: #6b7280; }
+        small { color: #9ca3af; font-size: 0.75rem; }
+      }
+    }
+
+    /* Centro: Barra de progreso */
+    .req-progress {
+      flex: 1;
+      padding: 0 24px;
+      min-width: 200px;
+
+      .progress-labels {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.85rem;
+        margin-bottom: 6px;
+        span { color: #6b7280; }
+        strong { color: #111827; }
+      }
+
+      ion-progress-bar {
+        height: 6px;
+        border-radius: 4px;
+        margin-bottom: 6px;
+      }
+
+      small { color: #9ca3af; font-size: 0.75rem; }
+    }
+
+    /* Derecha: Etiquetas (badges) y botones */
+    .req-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      gap: 12px;
+      flex: 1;
+      min-width: 220px;
+
+      .badge-group {
+        display: flex;
+        gap: 8px;
+
+        .status-badge {
+          display: flex; align-items: center; gap: 4px;
+          padding: 6px 10px; border-radius: 12px; font-weight: 500;
+        }
+
+        .outline-badge {
+          background: transparent;
+          border: 1px solid var(--ion-color-warning);
+          color: var(--ion-color-warning-shade);
+        }
+      }
+
+      .btn-group {
+        display: flex;
+        gap: 8px;
+
+        .btn-detalle {
+          --border-color: #3b82f6;
+          --color: #3b82f6;
+          text-transform: none;
+          font-weight: 600;
+        }
+
+        .btn-descargar {
+          text-transform: none;
+          font-weight: 600;
+        }
+      }
+    }
+  }
+
+  /* Indicador de estado vacío (sin datos) */
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #9ca3af;
+
+    ion-icon { font-size: 48px; margin-bottom: 12px; }
+  }
+}
+
+/* Diseño responsivo: En móviles o tablets pequeñas, las 3 columnas se apilan verticalmente */
+@media (max-width: 992px) {
+  .requests-list .request-card-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 16px;
+
+    .req-progress {
+      padding: 0;
+      width: 100%;
+    }
+
+    .req-actions {
+      align-items: flex-start;
+      width: 100%;
+
+      .btn-group {
+        width: 100%;
+        ion-button { flex: 1; }
+      }
+    }
+  }
+}
