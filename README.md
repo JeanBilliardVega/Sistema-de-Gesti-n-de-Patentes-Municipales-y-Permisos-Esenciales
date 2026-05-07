@@ -83,3 +83,33 @@ ionic serve
 6. **Paso opcional (solo si no tienes Vite instalado):**  
 Durante la ejecución, si te pregunta si deseas instalar Vite, selecciona **Yes** y espera a que termine la instalación.
 7. ¡Listo! Ahora puedes usar la aplicación en tu navegador.
+
+---
+
+## Guía de Uso Rápido
+
+Para facilitar las pruebas de la aplicación sin necesidad de una base de datos real, se han habilitado las siguientes credenciales y reglas de validación:
+
+### 1. Inicio de Sesión (Login)
+Existen dos formas de ingresar dependiendo del rol que desees probar:
+
+* **Modo Administrador:** * **RUT:** Escribe la palabra `admin`.
+    * **Contraseña:** Cualquier combinación de **8 o más caracteres**.
+* **Modo Ciudadano:** * Puedes usar cualquier RUT que sea matemáticamente válido (Incluyendo el tuyo propio o de algún pariente/conocido/amigo que conozcas). El formato acepta textos con o sin puntos, y con o sin guión, es decir: Con puntos y guión, sin puntos y guión, o sin puntos y sin guión. Aquí tienes 5 ejemplos listos para usar en caso de querer hacerlo más rápido:
+        1.  `11.111.111-1`
+        2.  `12.345.678-5`
+        3.  `22.222.222-2`
+        4.  `10.101.101-K`
+        5.  `20.202.202-7`
+    * **Contraseña:** Cualquier combinación de **8 o más caracteres**.
+
+### 2. Registro de Usuarios
+El formulario de registro cuenta con validaciones flexibles para agilizar las pruebas:
+* **Nombre:** Puedes ingresar cualquier nombre.
+* **RUT:** Debe ser un RUT válido (puedes usar los ejemplos anteriores).
+* **Correo Electrónico:** Se acepta cualquier formato básico (Ej: `pedro@mail.com`).
+* **Contraseña:** Debe tener un mínimo de **8 caracteres**.
+* **Persistencia:** Por motivos de demostración técnica, los datos registrados **no se almacenan de forma permanente** en una base de datos. Al cerrar la sesión o recargar, el sistema volverá a sus valores predeterminados.
+
+### 3. Navegación Post-Login
+Independientemente del nombre ingresado en el registro, el sistema mostrará un perfil predeterminado en el Dashboard para demostrar la interfaz de usuario y el flujo de los RFs (Requerimientos Funcionales).
