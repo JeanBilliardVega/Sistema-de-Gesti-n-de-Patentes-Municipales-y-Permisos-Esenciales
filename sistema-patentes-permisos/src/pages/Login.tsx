@@ -37,10 +37,12 @@ const Login: React.FC = () => {
         return;
         }
 
-        if (formData.rut.includes("admin")) {
-        history.push("/dashAdmin");
+        if (formData.rut === "admin" || formData.rut.includes("admin")) {
+            localStorage.setItem('rol', 'admin');
+            history.push("/dashAdmin");
         } else {
-        history.push("/dashCiudadano");
+            localStorage.setItem('rol', 'ciudadano');
+            history.push("/dashCiudadano");
         }
     };
 

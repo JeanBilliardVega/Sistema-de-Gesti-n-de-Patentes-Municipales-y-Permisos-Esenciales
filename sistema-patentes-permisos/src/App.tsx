@@ -6,6 +6,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import DashboardCiudadano from "./pages/DashboardCiudadano";
 import DashboardAdmin from "./pages/DashboardAdmin";
+import DetalleSolicitud from "./pages/DetalleSolicitud";
 
 /* CSS básico requerido para que los componentes de Ionic funcionen correctamente */
 import '@ionic/react/css/core.css';
@@ -50,6 +51,10 @@ const App: React.FC = () => (
 
         <Route exact path="/dashAdmin">
           <DashboardAdmin />
+        </Route>
+
+        <Route exact path="/solicitud/:id">
+          <DetalleSolicitud />
         </Route>
 
 
