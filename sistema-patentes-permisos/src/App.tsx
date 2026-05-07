@@ -5,6 +5,7 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import DashboardCiudadano from "./pages/DashboardCiudadano";
+import DashboardAdmin from "./pages/DashboardAdmin";
 
 /* CSS básico requerido para que los componentes de Ionic funcionen correctamente */
 import '@ionic/react/css/core.css';
@@ -20,28 +21,37 @@ import '@ionic/react/css/text-transformation.css';
 import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
 
-
 setupIonicReact();
 
 const App: React.FC = () => (
   <IonApp>
     <IonReactRouter>
       <IonRouterOutlet>
+
         <Route exact path="/home">
           <Home />
         </Route>
+
         <Route exact path="/">
           <Redirect to="/ingresar" />
         </Route>
+
         <Route exact path="/ingresar">
           <Login />
         </Route>
+
         <Route exact path='/registrar'>
           <Register />
         </Route>
+
         <Route exact path="/dashCiudadano">
           <DashboardCiudadano />
         </Route>
+
+        <Route exact path="/dashAdmin">
+          <DashboardAdmin />
+        </Route>
+
 
       </IonRouterOutlet>
     </IonReactRouter>

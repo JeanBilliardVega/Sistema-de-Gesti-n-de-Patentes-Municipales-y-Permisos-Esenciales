@@ -38,7 +38,7 @@ const Login: React.FC = () => {
         }
 
         if (formData.rut.includes("admin")) {
-        history.push("/admin");
+        history.push("/dashAdmin");
         } else {
         history.push("/dashCiudadano");
         }
