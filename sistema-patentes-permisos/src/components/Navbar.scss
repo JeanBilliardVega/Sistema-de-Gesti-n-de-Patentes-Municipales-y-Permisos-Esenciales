@@ -1,0 +1,102 @@
+.custom-navbar {
+  border-bottom: 2px solid var(--ion-color-primary);
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+
+  ion-toolbar {
+    --background: #ffffff;
+    --padding-top: 5px;
+    --padding-bottom: 5px;
+    --padding-start: 15px;
+    --padding-end: 15px;
+  }
+
+  .logo-container {
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    .navbar-logo {
+      height: 45px;
+      width: auto;
+      object-fit: contain;
+    }
+
+    .logo-text-container {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.1;
+
+      .muni-name {
+        font-weight: 800;
+        font-size: 1.1rem;
+        color: var(--ion-color-primary);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .muni-tagline {
+        font-weight: 400;
+        font-size: 0.75rem;
+        color: var(--ion-color-medium);
+        text-transform: uppercase;
+      }
+    }
+  }
+
+  .navbar-buttons {
+    display: flex;
+    gap: 10px;
+
+    .nav-link {
+      --color: var(--ion-color-secondary);
+      font-weight: 600;
+      text-transform: none;
+      font-size: 0.95rem;
+
+      &:hover {
+        --color: var(--ion-color-primary);
+      }
+    }
+
+    .logout-btn {
+      --color: var(--ion-color-danger, #dc3545);
+      
+      &:hover {
+        --color: #b02a37;
+      }
+    }
+  }
+
+  @media (max-width: 768px) {
+    .nav-text {
+      display: none;
+    }
+
+    .navbar-buttons {
+      gap: 0;
+    }
+
+    .nav-link {
+      --padding-start: 8px;
+      --padding-end: 8px;
+      margin: 0;
+      
+      ion-icon {
+        font-size: 1.4rem;
+        margin: 0 !important;
+      }
+    }
+  }
+
+  @media (max-width: 480px) {
+    .logo-text-container {
+      .muni-tagline {
+        display: none;
+      }
+      .muni-name {
+        font-size: 0.9rem;
+      }
+    }
+  }
+}

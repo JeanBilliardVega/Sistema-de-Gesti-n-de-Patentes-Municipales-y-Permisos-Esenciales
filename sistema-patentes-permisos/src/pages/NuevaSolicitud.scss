@@ -2,60 +2,85 @@
   --background: #f4f7f9;
 }
 
-.solicitud-toolbar {
-  --padding-top: 8px;
-  --padding-bottom: 8px;
-  font-weight: 600;
-  font-size: 1.2rem;
-
-  .btn-cancelar-header {
-    text-transform: none;
-    font-weight: 400;
-    color: rgba(255, 255, 255, 0.8);
-  }
+.form-wrapper {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 1.5rem 1rem;
 }
 
-.form-wrapper {
-  max-width: 800px;
-  margin: 0 auto; /* Centrar en pantallas grandes */
+.header-actions {
+  margin-bottom: 1.5rem;
+
+  .btn-volver {
+    margin-left: -8px;
+    margin-bottom: 8px;
+    text-transform: none;
+    font-weight: 500;
+  }
+
+  .page-title {
+    margin: 0;
+    font-weight: 700;
+    font-size: 1.6rem;
+    color: var(--ion-color-dark);
+  }
 }
 
 .form-card {
   margin: 0 0 24px 0;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05) !important;
   border-radius: 8px;
+  border-top: 3px solid var(--ion-color-primary);
+  background: #ffffff;
+
+  .card-header-flex {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+
+    .card-icon {
+      background: rgba(var(--ion-color-primary-rgb), 0.1);
+      padding: 12px;
+      border-radius: 8px;
+      display: flex;
+      
+      ion-icon {
+        font-size: 1.8rem;
+        color: var(--ion-color-primary);
+      }
+    }
+  }
 
   ion-card-title {
     font-size: 1.2rem;
-    font-weight: 600;
-    color: #111827;
+    font-weight: 700;
+    color: var(--ion-color-dark);
   }
 
   ion-card-subtitle {
     margin-top: 4px;
     font-size: 0.85rem;
-    color: #6b7280;
+    color: var(--ion-color-medium);
     text-transform: none;
   }
 }
 
-/* Diseño del área de entrada del formulario */
 .custom-form-grid {
   --ion-grid-column-padding: 8px;
 }
 
 .input-group {
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 
   ion-input, ion-select, ion-textarea {
     --border-radius: 6px;
-    --border-color: #e5e7eb;
-    --background: #f9fafb;
-    --padding-start: 12px;
-
+    --border-color: #ced4da;
+    --highlight-color-focused: var(--ion-color-primary);
+    
     &::part(label) {
       font-weight: 600;
-      color: #374151;
+      color: var(--ion-color-tertiary);
       margin-bottom: 8px;
       font-size: 0.9rem;
     }
@@ -69,25 +94,25 @@
   }
 }
 
-/* Zona de subida de archivos (borde discontinuo) */
 .upload-zone {
-  border: 2px dashed #d1d5db;
+  border: 2px dashed #ced4da;
   border-radius: 8px;
   padding: 32px 20px;
   text-align: center;
   cursor: pointer;
   transition: all 0.2s ease;
   margin-bottom: 20px;
+  background-color: #fafbfc;
 
   &:hover {
-    border-color: #60a5fa;
-    background-color: #f8fafc;
+    border-color: var(--ion-color-primary);
+    background-color: rgba(var(--ion-color-primary-rgb), 0.03);
   }
 
   .upload-icon-wrapper {
     width: 64px;
     height: 64px;
-    background-color: #e0f2fe;
+    background-color: rgba(var(--ion-color-primary-rgb), 0.1);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -96,36 +121,39 @@
 
     ion-icon {
       font-size: 32px;
-      color: #2563eb;
+      color: var(--ion-color-primary);
     }
   }
 
   .upload-text {
     font-size: 1rem;
-    color: #374151;
+    color: var(--ion-color-dark);
     margin: 0 0 8px 0;
-    .text-blue { color: #2563eb; font-weight: 600; }
+    
+    .text-blue { 
+      color: var(--ion-color-primary); 
+      font-weight: 600; 
+    }
   }
 
   .upload-hint {
-    font-size: 0.75rem;
-    color: #6b7280;
+    font-size: 0.8rem;
+    color: var(--ion-color-medium);
     margin: 0;
   }
 }
 
-/* Cuadro de información de documentos requeridos */
 .required-docs-box {
-  background-color: #eff6ff;
-  border: 1px solid #bfdbfe;
+  background-color: rgba(var(--ion-color-primary-rgb), 0.05);
+  border: 1px solid rgba(var(--ion-color-primary-rgb), 0.2);
   border-radius: 8px;
   padding: 16px;
   margin-bottom: 20px;
 
   .docs-title {
     font-weight: 600;
-    font-size: 0.9rem;
-    color: #1e3a8a;
+    font-size: 0.95rem;
+    color: var(--ion-color-primary);
     margin: 0 0 10px 0;
   }
 
@@ -138,26 +166,25 @@
       display: flex;
       align-items: center;
       font-size: 0.85rem;
-      color: #374151;
+      color: var(--ion-color-dark);
       margin-bottom: 6px;
 
       ion-icon {
-        color: #2563eb;
+        color: var(--ion-color-primary);
         margin-right: 8px;
-        font-size: 16px;
+        font-size: 18px;
       }
     }
   }
 }
 
-/* Sección de archivos subidos */
 .uploaded-files-section {
   margin-top: 16px;
 
   .files-header {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     font-weight: 600;
-    color: #374151;
+    color: var(--ion-color-dark);
     display: block;
     margin-bottom: 12px;
   }
@@ -167,36 +194,49 @@
     padding: 0;
 
     .file-item {
-      --background: #f9fafb;
-      --border-color: #e5e7eb;
-      --border-width: 1px;
-      --border-radius: 8px;
+      --background: #ffffff;
+      border: 1px solid #e2e8f0;
+      border-radius: 8px;
       margin-bottom: 8px;
 
-      .file-icon { color: #2563eb; font-size: 24px; }
-      h2 { font-size: 0.9rem; font-weight: 500; color: #111827; }
-      p { font-size: 0.75rem; color: #6b7280; }
+      .file-icon { 
+        color: var(--ion-color-primary); 
+        font-size: 24px; 
+      }
+      
+      h2 { 
+        font-size: 0.9rem; 
+        font-weight: 500; 
+        color: var(--ion-color-dark); 
+      }
+      
+      p { 
+        font-size: 0.75rem; 
+        color: var(--ion-color-medium); 
+      }
     }
   }
 }
 
-/* Botones de acción inferiores */
 .form-actions {
   display: flex;
   justify-content: flex-end;
   gap: 12px;
-  margin-bottom: 40px;
+  margin-bottom: 20px;
 
   .btn-action {
     text-transform: none;
     font-weight: 600;
     min-width: 140px;
+    --border-radius: 4px;
   }
 }
 
 @media (max-width: 576px) {
   .form-actions {
-    flex-direction: column;
-    .btn-action { width: 100%; }
+    flex-direction: column-reverse;
+    .btn-action { 
+      width: 100%; 
+    }
   }
 }

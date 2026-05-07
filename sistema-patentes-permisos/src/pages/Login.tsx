@@ -39,10 +39,10 @@ const Login: React.FC = () => {
 
         if (formData.rut === "admin" || formData.rut.includes("admin")) {
             localStorage.setItem('rol', 'admin');
-            history.push("/dashAdmin");
+            history.push("/funcionario/inicio"); 
         } else {
             localStorage.setItem('rol', 'ciudadano');
-            history.push("/dashCiudadano");
+            history.push("/ciudadano/inicio");
         }
     };
 
@@ -51,7 +51,6 @@ const Login: React.FC = () => {
             <IonContent fullscreen className="login-background">
             
                 <div className="login-container">
-                    {/*Tarjeta para iniciar sesion */}
                     <IonCard className="login-card">
                         <IonCardHeader className="login-card-header">
                             <img src="/logo-municipalidad.webp" alt="Logo Municipalidad de Santo Domingo" className="logo-municipal" />

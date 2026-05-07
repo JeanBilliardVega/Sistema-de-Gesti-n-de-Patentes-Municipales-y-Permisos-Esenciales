@@ -32,43 +32,47 @@ const App: React.FC = () => (
   <IonApp>
     <IonReactRouter>
       <IonRouterOutlet>
-
+        {/* PÚBLICO */}
+        <Route exact path="/">
+          <Redirect to="/ingresar" />
+        </Route>
+        <Route exact path="/ingresar">
+          <Login />
+        </Route>
+        <Route exact path='/registrar'>
+          <Register />
+        </Route>
         <Route exact path="/home">
           <Home />
         </Route>
 
-        <Route exact path="/">
-          <Redirect to="/ingresar" />
+        {/* CIUDADANO */}
+        <Route exact path="/ciudadano">
+          <Redirect to="/ciudadano/inicio" />
         </Route>
-
-        <Route exact path="/ingresar">
-          <Login />
-        </Route>
-
-        <Route exact path='/registrar'>
-          <Register />
-        </Route>
-
-        <Route exact path="/dashCiudadano">
+        <Route exact path="/ciudadano/inicio">
           <DashboardCiudadano />
         </Route>
-
-        <Route exact path="/dashAdmin">
-          <DashboardAdmin />
+        <Route exact path="/ciudadano/solicitudes">
+          <SeguimientoSolicitudes /> 
         </Route>
-
-        <Route exact path="/solicitud/:id">
+        <Route exact path="/ciudadano/nueva-solicitud">
+          <NuevaSolicitud />
+        </Route>
+        <Route exact path="/ciudadano/solicitudes/:id">
           <DetalleSolicitud />
         </Route>
 
-        <Route exact path="/nueva-solicitud">
-          <NuevaSolicitud />
+        {/* FUNCIONARIO */}
+        <Route exact path="/funcionario">
+          <Redirect to="/funcionario/inicio" />
         </Route>
-
-        <Route exact path="/seguimiento">
-          <SeguimientoSolicitudes />
+        <Route exact path="/funcionario/inicio">
+          <DashboardAdmin />
         </Route>
-
+        <Route exact path="/funcionario/solicitudes/:id">
+          <DetalleSolicitud />
+        </Route>
 
       </IonRouterOutlet>
     </IonReactRouter>
