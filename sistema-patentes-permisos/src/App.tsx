@@ -4,16 +4,15 @@ import { IonReactRouter } from '@ionic/react-router';
 import Home from './pages/Home';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import DashboardCiudadano from "./pages/DashboardCiudadano";
 
-/* Core CSS required for Ionic components to work properly */
+/* CSS básico requerido para que los componentes de Ionic funcionen correctamente */
 import '@ionic/react/css/core.css';
-
-/* Basic CSS for apps built with Ionic */
+/* CSS básico para aplicaciones construidas con Ionic */
 import '@ionic/react/css/normalize.css';
 import '@ionic/react/css/structure.css';
 import '@ionic/react/css/typography.css';
-
-/* Optional CSS utils that can be commented out */
+/* Utilidades CSS opcionales que pueden ser comentadas */
 import '@ionic/react/css/padding.css';
 import '@ionic/react/css/float-elements.css';
 import '@ionic/react/css/text-alignment.css';
@@ -21,19 +20,6 @@ import '@ionic/react/css/text-transformation.css';
 import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/display.css';
 
-/**
- * Ionic Dark Mode
- * -----------------------------------------------------
- * For more info, please see:
- * https://ionicframework.com/docs/theming/dark-mode
- */
-
-/* import '@ionic/react/css/palettes/dark.always.css'; */
-/* import '@ionic/react/css/palettes/dark.class.css'; */
-import '@ionic/react/css/palettes/dark.system.css';
-
-/* Theme variables */
-import './theme/variables.css';
 
 setupIonicReact();
 
@@ -52,6 +38,9 @@ const App: React.FC = () => (
         </Route>
         <Route exact path='/registrar'>
           <Register />
+        </Route>
+        <Route exact path="/dashCiudadano">
+          <DashboardCiudadano />
         </Route>
 
       </IonRouterOutlet>

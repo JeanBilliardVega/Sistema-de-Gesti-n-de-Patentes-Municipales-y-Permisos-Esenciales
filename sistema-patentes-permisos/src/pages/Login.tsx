@@ -21,9 +21,9 @@ const Login: React.FC = () => {
         const newErrors: { rut?: string; password?: string } = {};
 
         if (!formData.rut) {
-        newErrors.rut = "El RUT es obligatorio";
-        } else if (!validateRUT(formData.rut)) {
-        newErrors.rut = "RUT inválido";
+            newErrors.rut = "El RUT es obligatorio";
+        } else if (formData.rut !== "admin" && !validateRUT(formData.rut)) {
+            newErrors.rut = "RUT inválido";
         }
 
         if (!formData.password) {
@@ -40,7 +40,7 @@ const Login: React.FC = () => {
         if (formData.rut.includes("admin")) {
         history.push("/admin");
         } else {
-        history.push("/home");
+        history.push("/dashCiudadano");
         }
     };
 
