@@ -15,10 +15,10 @@ const Register: React.FC = () => {
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     const [formData, setFormData] = useState({
-        nombreUsuario: "",
+        nombre: "",
         rut: "",
         email: "",
-        region: "Valparaíso", // Valor por defecto corregido
+        region: "Valparaíso",
         comuna: "Santo Domingo",
         password: "",
         confirmPassword: "",
@@ -88,7 +88,7 @@ const Register: React.FC = () => {
         const newErrors: Record<string, string> = {};
 
         // Validaciones mejoradas
-        if (!formData.nombreUsuario.trim()) newErrors.nombreUsuario = "El nombre es obligatorio";
+        if (!formData.nombre.trim()) newErrors.nombre = "El nombre es obligatorio";
         if (!validateRUT(formData.rut)) newErrors.rut = "RUT inválido (ej: 12.345.678-9)";
         if (!formData.email.includes("@")) newErrors.email = "Email inválido";
         if (!formData.region) newErrors.region = "Seleccione región";
@@ -128,13 +128,13 @@ const Register: React.FC = () => {
                                                     label="Nombre completo"
                                                     labelPlacement='stacked'
                                                     fill='outline'
-                                                    value={formData.nombreUsuario}
+                                                    value={formData.nombre}
                                                     onIonInput={(e) => {
-                                                        setFormData({ ...formData, nombreUsuario: e.target.value as string });
-                                                        setErrors({...errors, nombreUsuario: ""});
+                                                        setFormData({ ...formData, nombre: e.target.value as string });
+                                                        setErrors({...errors, nombre: ""});
                                                     }}
-                                                    className={`input-gob ${errors.nombreUsuario ? 'ion-invalid ion-touched' : ''}`}
-                                                    errorText={errors.nombreUsuario}
+                                                    className={`input-gob ${errors.nombre ? 'ion-invalid ion-touched' : ''}`}
+                                                    errorText={errors.nombre}
                                                 />
                                             </div>
                                         </IonCol>

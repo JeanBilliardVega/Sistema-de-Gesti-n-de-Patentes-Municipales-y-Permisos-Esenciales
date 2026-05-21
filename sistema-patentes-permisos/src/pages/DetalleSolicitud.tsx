@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { useHistory, useParams } from "react-router-dom";
 import {
-    IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButtons, IonButton,
-    IonIcon, IonGrid, IonRow, IonCol, IonCard, IonCardHeader, IonCardTitle,
-    IonCardContent, IonBadge, IonTextarea, IonSelect, IonSelectOption,
-    useIonToast, IonLabel, IonItem, IonList
+    IonPage, IonContent, IonButton, IonIcon, IonGrid, IonRow, IonCol, 
+    IonCard, IonCardHeader, IonCardTitle, IonCardContent, IonBadge, 
+    IonTextarea, IonSelect, IonSelectOption, useIonToast, IonLabel, 
+    IonItem, IonList
 } from "@ionic/react";
 import {
     arrowBackOutline, businessOutline, documentTextOutline, locationOutline,
@@ -12,9 +12,9 @@ import {
     sendOutline, downloadOutline, checkmarkCircleOutline, closeCircleOutline,
     alertCircleOutline
 } from "ionicons/icons";
+import Navbar from "../components/Navbar";
 import './DetalleSolicitud.scss';
 
-// 模拟数据 (Mock data)
 const solicitudData = {
     id: "SOL-2026-012",
     negocio: "Cafetería Central",
@@ -40,7 +40,6 @@ const DetalleSolicitud: React.FC = () => {
     const { id } = useParams<{ id: string }>();
     const [presentToast] = useIonToast();
 
-    // 核心改造：自动从本地存储读取当前登录用户的角色
     const esAdmin = localStorage.getItem('rol') === 'admin';
 
     const [nuevoMensaje, setNuevoMensaje] = useState("");
@@ -61,25 +60,24 @@ const DetalleSolicitud: React.FC = () => {
 
     return (
         <IonPage>
-            {/* 顶部导航：根据自动判断的身份显示颜色 */}
-            <IonHeader className="ion-no-border">
-                <IonToolbar color={esAdmin ? "dark" : "primary"} className="detalle-toolbar">
-                    <IonButtons slot="start">
-                        <IonButton onClick={() => history.goBack()}>
-                            <IonIcon icon={arrowBackOutline} slot="icon-only" />
-                        </IonButton>
-                    </IonButtons>
-                    <IonTitle>Detalle de Solicitud</IonTitle>
-                </IonToolbar>
-            </IonHeader>
+            <Navbar tipoUsuario={esAdmin ? 'funcionario' : 'ciudadano'} />
 
-            <IonContent className="ion-padding detalle-bg">
+            <IonContent className="detalle-bg">
                 <div className="detalle-wrapper">
+                    
+                    <div className="header-actions">
+                        <IonButton fill="clear" color="medium" onClick={() => history.goBack()} className="btn-volver">
+                            <IonIcon slot="start" icon={arrowBackOutline} />
+                            Volver
+                        </IonButton>
+                        <h2 className="page-title">Detalle de Solicitud {id}</h2>
+                    </div>
+
                     <IonGrid className="ion-no-padding custom-grid">
                         <IonRow>
                             <IonCol size="12" sizeLg="8" className="col-main">
-                                {/* 1. 基本信息卡片 */}
-                                <IonCard className="detalle-card">
+                                
+                                <IonCard className="detalle-card main-info-card">
                                     <IonCardHeader className="card-header-flex">
                                         <div>
                                             <IonCardTitle>{solicitudData.negocio}</IonCardTitle>
@@ -126,11 +124,11 @@ const DetalleSolicitud: React.FC = () => {
                                     </IonCardContent>
                                 </IonCard>
 
-                                {/* 2. 申请人信息 */}
                                 <IonCard className="detalle-card">
                                     <IonCardHeader>
                                         <IonCardTitle className="title-with-icon">
-                                            <IonIcon icon={personOutline} /> Datos del Solicitante
+                                            <div className="icon-box"><IonIcon icon={personOutline} /></div> 
+                                            Datos del Solicitante
                                         </IonCardTitle>
                                     </IonCardHeader>
                                     <IonCardContent>
@@ -159,23 +157,25 @@ const DetalleSolicitud: React.FC = () => {
                                     </IonCardContent>
                                 </IonCard>
 
-                                {/* 3. 附件列表 */}
                                 <IonCard className="detalle-card">
                                     <IonCardHeader>
                                         <IonCardTitle className="title-with-icon">
-                                            <IonIcon icon={documentTextOutline} /> Documentos Adjuntos
+                                            <div className="icon-box"><IonIcon icon={documentTextOutline} /></div> 
+                                            Documentos Adjuntos
                                         </IonCardTitle>
                                     </IonCardHeader>
                                     <IonCardContent>
                                         <IonList className="doc-list">
                                             {solicitudData.documentos.map((doc, idx) => (
                                                 <IonItem key={idx} className="doc-item" lines="none">
-                                                    <IonIcon icon={documentTextOutline} slot="start" className="doc-icon" />
+                                                    <div slot="start" className="doc-icon-wrapper">
+                                                        <IonIcon icon={documentTextOutline} className="doc-icon" />
+                                                    </div>
                                                     <IonLabel>
                                                         <h2>{doc.nombre}</h2>
                                                         <p>{doc.tamano}</p>
                                                     </IonLabel>
-                                                    <IonButton fill="outline" slot="end" className="btn-download">
+                                                    <IonButton fill="clear" slot="end" className="btn-download">
                                                         <IonIcon icon={downloadOutline} slot="icon-only" />
                                                     </IonButton>
                                                 </IonItem>
@@ -184,11 +184,11 @@ const DetalleSolicitud: React.FC = () => {
                                     </IonCardContent>
                                 </IonCard>
 
-                                {/* 4. 沟通与意见留言 */}
                                 <IonCard className="detalle-card">
                                     <IonCardHeader>
                                         <IonCardTitle className="title-with-icon">
-                                            <IonIcon icon={chatbubbleEllipsesOutline} /> Observaciones y Comunicación
+                                            <div className="icon-box"><IonIcon icon={chatbubbleEllipsesOutline} /></div> 
+                                            Observaciones y Comunicación
                                         </IonCardTitle>
                                         <p className="subtitle">Historial de mensajes y requerimientos</p>
                                     </IonCardHeader>
@@ -208,7 +208,7 @@ const DetalleSolicitud: React.FC = () => {
                                         <div className="divider"></div>
 
                                         <div className="new-message-box">
-                                            <p className="reply-label">{esAdmin ? "Enviar observación al ciudadano" : "Responder al administrador"}</p>
+                                            <p className="reply-label">{esAdmin ? "Enviar observación al ciudadano:" : "Responder al administrador:"}</p>
                                             <IonTextarea
                                                 placeholder="Escribe tu mensaje aquí..."
                                                 fill="outline"
@@ -217,17 +217,51 @@ const DetalleSolicitud: React.FC = () => {
                                                 onIonInput={e => setNuevoMensaje(e.detail.value!)}
                                                 className="chat-textarea"
                                             />
-                                            <IonButton onClick={handleEnviarMensaje} className="btn-send">
-                                                <IonIcon icon={sendOutline} slot="start" />
-                                                Enviar Mensaje
-                                            </IonButton>
+                                            <div className="chat-action">
+                                                <IonButton onClick={handleEnviarMensaje} className="btn-send" color="primary">
+                                                    <IonIcon icon={sendOutline} slot="start" /> Enviar Mensaje
+                                                </IonButton>
+                                            </div>
                                         </div>
                                     </IonCardContent>
                                 </IonCard>
                             </IonCol>
 
+                            {/* COLUMNA LATERAL (SIDEBAR) */}
                             <IonCol size="12" sizeLg="4" className="col-sidebar">
-                                {/* 时间线状态卡片 */}
+                                
+                                {/* Panel de Administrador (Solo visible para Admin) */}
+                                {esAdmin && (
+                                    <IonCard className="detalle-card admin-actions-card">
+                                        <IonCardHeader>
+                                            <IonCardTitle>Acciones de Administrador</IonCardTitle>
+                                        </IonCardHeader>
+                                        <IonCardContent>
+                                            <div className="action-group">
+                                                <label>Cambiar Estado de Solicitud</label>
+                                                <IonSelect fill="outline" value={nuevoEstado} onIonChange={e => setNuevoEstado(e.detail.value)}>
+                                                    <IonSelectOption value="Revisión">En Revisión</IonSelectOption>
+                                                    <IonSelectOption value="Observada">Observada</IonSelectOption>
+                                                    <IonSelectOption value="Aprobada">Aprobada</IonSelectOption>
+                                                    <IonSelectOption value="Rechazada">Rechazada</IonSelectOption>
+                                                </IonSelect>
+                                            </div>
+                                            <IonButton expand="block" className="btn-actualizar" onClick={handleCambiarEstado} color="tertiary">
+                                                Actualizar Estado
+                                            </IonButton>
+
+                                            <div className="divider"></div>
+
+                                            <IonButton expand="block" fill="outline" color="success" className="btn-approve">
+                                                <IonIcon icon={checkmarkCircleOutline} slot="start" /> Aprobar Solicitud
+                                            </IonButton>
+                                            <IonButton expand="block" fill="outline" color="danger" className="btn-reject mt-2">
+                                                <IonIcon icon={closeCircleOutline} slot="start" /> Rechazar Solicitud
+                                            </IonButton>
+                                        </IonCardContent>
+                                    </IonCard>
+                                )}
+
                                 <IonCard className="detalle-card">
                                     <IonCardHeader>
                                         <IonCardTitle>Estado del Trámite</IonCardTitle>
@@ -252,49 +286,16 @@ const DetalleSolicitud: React.FC = () => {
                                                 <div className="timeline-icon bg-gray"><IonIcon icon={checkmarkCircleOutline} /></div>
                                                 <div className="timeline-content">
                                                     <h4>Pendiente Aprobación</h4>
-                                                    <p>-</p>
+                                                    <p>--</p>
                                                 </div>
                                             </div>
                                         </div>
                                     </IonCardContent>
                                 </IonCard>
 
-                                {/* 管理员专属操作面板 (自动判断) */}
-                                {esAdmin && (
-                                    <IonCard className="detalle-card admin-actions-card">
-                                        <IonCardHeader>
-                                            <IonCardTitle>Acciones de Administrador</IonCardTitle>
-                                        </IonCardHeader>
-                                        <IonCardContent>
-                                            <div className="action-group">
-                                                <label>Cambiar Estado</label>
-                                                <IonSelect fill="outline" value={nuevoEstado} onIonChange={e => setNuevoEstado(e.detail.value)}>
-                                                    <IonSelectOption value="Revisión">En Revisión</IonSelectOption>
-                                                    <IonSelectOption value="Observada">Observada</IonSelectOption>
-                                                    <IonSelectOption value="Aprobada">Aprobada</IonSelectOption>
-                                                    <IonSelectOption value="Rechazada">Rechazada</IonSelectOption>
-                                                </IonSelect>
-                                            </div>
-                                            <IonButton expand="block" className="btn-actualizar" onClick={handleCambiarEstado}>
-                                                Actualizar Estado
-                                            </IonButton>
-
-                                            <div className="divider"></div>
-
-                                            <IonButton expand="block" fill="outline" color="success" className="btn-approve">
-                                                <IonIcon icon={checkmarkCircleOutline} slot="start" /> Aprobar Solicitud
-                                            </IonButton>
-                                            <IonButton expand="block" fill="outline" color="danger" className="btn-reject mt-2">
-                                                <IonIcon icon={closeCircleOutline} slot="start" /> Rechazar Solicitud
-                                            </IonButton>
-                                        </IonCardContent>
-                                    </IonCard>
-                                )}
-
-                                {/* 快速信息卡片 */}
                                 <IonCard className="detalle-card">
                                     <IonCardHeader>
-                                        <IonCardTitle>Información Rápida</IonCardTitle>
+                                        <IonCardTitle>Resumen</IonCardTitle>
                                     </IonCardHeader>
                                     <IonCardContent>
                                         <div className="quick-info-list">
