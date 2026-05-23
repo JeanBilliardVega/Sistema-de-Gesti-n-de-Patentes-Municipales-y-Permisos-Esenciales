@@ -8,12 +8,12 @@ import {
 import { useHistory } from 'react-router-dom';
 import './Register.scss';
 import { eyeOffOutline, eyeOutline } from 'ionicons/icons';
+import { rutas_api } from '../api';
 
 const Register: React.FC = () => {
     const history = useHistory();
     const [showPassword, setShowPassword] = useState(false);
     const [errors, setErrors] = useState<Record<string, string>>({});
-
     const [formData, setFormData] = useState({
         nombre: "",
         rut: "",
@@ -83,11 +83,10 @@ const Register: React.FC = () => {
         return dvIngresado === dvCalculado;
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const newErrors: Record<string, string> = {};
 
-        // Validaciones mejoradas
         if (!formData.nombre.trim()) newErrors.nombre = "El nombre es obligatorio";
         if (!validateRUT(formData.rut)) newErrors.rut = "RUT inválido (ej: 12.345.678-9)";
         if (!formData.email.includes("@")) newErrors.email = "Email inválido";
@@ -102,9 +101,40 @@ const Register: React.FC = () => {
             return;
         }
 
-        // REDIRECCIÓN CORREGIDA A TU RUTA REAL (/ingresar)
-        console.log("Datos de registro:", formData);
-        history.push("/ingresar");
+        const datosUsuario = {
+            rut: formData.rut,
+            nombre: formData.nombre,
+            email: formData.email,
+            region: formData.region,
+            comuna: formData.comuna,
+            password: formData.password,
+            confirmPassword: formData.confirmPassword,
+            acceptTerms: formData.acceptTerms
+        }
+
+        try {
+            const respuesta = await fetch(
+                rutas_api.registrarse,
+                {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(datosUsuario)
+                });
+            const resultado = await respuesta.json(); 
+
+            if (!respuesta.ok) {
+                alert(resultado.error); 
+                return;
+            }
+
+            alert(resultado.mensaje);
+            history.push("/ingresar");
+        } catch (error) {
+            console.error('Error de conexión:', error);
+            alert('No se pudo establecer comunicación con el servidor.');
+        }
     };
 
     return (

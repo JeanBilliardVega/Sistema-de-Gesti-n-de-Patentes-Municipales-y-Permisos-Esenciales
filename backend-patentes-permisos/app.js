@@ -2,8 +2,10 @@ const express = require('express');
 const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const cors = require('cors');
 const app = express();
 app.use(express.json());
+app.use(cors());
 /* Si lo cambian que sea distinto al front */
 const port = 3000;
 /* Conexion db, la informacion esta en docker-compose.yml */

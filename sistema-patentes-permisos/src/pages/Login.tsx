@@ -5,6 +5,7 @@ import {
     IonCardSubtitle, IonCardContent, IonInput, IonButton, IonIcon
 } from "@ionic/react";
 import { eyeOutline, eyeOffOutline } from "ionicons/icons";
+import { rutas_api } from '../api';
 import './Login.scss';
 
 const Login: React.FC = () => {
@@ -43,10 +44,9 @@ const Login: React.FC = () => {
         return dvIngresado === dvCalculado;
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const newErrors: { rut?: string; password?: string } = {};
-
         const rutInput = formData.rut.trim().toLowerCase();
         const esAdmin = rutInput === "admin" || rutInput.includes("admin");
 
@@ -58,7 +58,7 @@ const Login: React.FC = () => {
 
         if (!formData.password) {
             newErrors.password = "La contraseña es obligatoria";
-        } else if (formData.password.length < 8) { // ACTUALIZADO: Ahora pide 8 caracteres igual que el registro
+        } else if (formData.password.length < 8) { 
             newErrors.password = "La contraseña debe tener al menos 8 caracteres";
         }
 
@@ -67,14 +67,37 @@ const Login: React.FC = () => {
             return;
         }
 
-        if (esAdmin) {
-            localStorage.setItem('rol', 'admin');
-            history.push("/dashAdmin");
-            history.push("/funcionario/inicio");
-        } else {
-            localStorage.setItem('rol', 'ciudadano');
-            history.push("/dashCiudadano");
-            history.push("/ciudadano/inicio");
+        try {
+            const respuesta = await fetch(rutas_api.login, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    rut: formData.rut,
+                    password: formData.password
+                })
+            });
+            const resultado = await respuesta.json();
+
+            if (!respuesta.ok) {
+                alert(resultado.mensaje || "Error al iniciar sesión");
+                return;
+            }
+            localStorage.setItem('token_patentes', resultado.token);
+            localStorage.setItem('usuario_patentes', JSON.stringify(resultado.usuario));
+            
+            const rolUsuario = resultado.usuario.rol;
+            if (rolUsuario === 'admin') {
+                alert("¡Bienvenido al panel de Administración!");
+                history.push("/funcionario/inicio"); 
+            } else {
+                alert("¡Sesión iniciada correctamente!");
+                history.push("/ciudadano/inicio"); 
+            }
+        } catch (error) {
+            console.error('Error de conexión:', error);
+            alert('No se pudo establecer comunicación con el servidor.');
         }
     };
 
