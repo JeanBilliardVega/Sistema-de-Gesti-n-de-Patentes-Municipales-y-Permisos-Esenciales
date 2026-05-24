@@ -102,6 +102,42 @@ app.post('/api/iniciar_sesion', async(req, res) => {
     }
 });
 
+const verificarToken = (req, res, next) => {
+    const autorizacion = req.headers['authorization'];
+    if (!autorizacion) {
+        return res.status(403).json({error: 'Acceso denegado, falta de credenciales'});
+    }
+    
+    const token = autorizacion.split(' ')[1];
+    if (!token) {
+        return res.status(403).json({error: 'Token invalido'});
+    }
+
+    try {
+        const verificacionToken = jwt.verify(token, clave_token);
+        req.usuario = verificacionToken;
+        next();
+    } catch (error) {
+        return res.status(401).json({error: 'Token invalido o expirado, vuelva a iniciar sesion'});
+    }
+};
+
+app.get('/api/obtener_informacion_usuario', verificarToken, async (req, res) => {
+    try {
+        return res.status(200).json({
+            mensaje: 'Bienvenido ' + req.usuario.nombre,
+            info: {
+                rut: req.usuario.rut,
+                nombre: req.usuario.nombre,
+                email: req.usuario.email,
+                rol: req.usuario.rol
+            }
+        });
+    } catch (error) {
+        return res.status(500).json({error: 'Error interno del servidor'});
+    }
+});
+
 app.listen(port, () => {
     console.log('a');
 });
