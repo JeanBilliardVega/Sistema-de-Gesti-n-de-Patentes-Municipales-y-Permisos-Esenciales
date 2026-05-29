@@ -4,6 +4,7 @@ import { IonHeader, IonToolbar, IonButtons, IonButton, IonIcon } from '@ionic/re
 import { homeOutline, documentTextOutline, logOutOutline } from 'ionicons/icons';
 import { useHistory } from 'react-router-dom';
 import './Navbar.scss';
+import { cerrarSesion } from '../auth/Usuario';
 
 interface NavbarProps {
     tipoUsuario: 'ciudadano' | 'funcionario';
@@ -15,7 +16,8 @@ const Navbar: React.FC<NavbarProps> = ({ tipoUsuario }) => {
     const baseUrl = tipoUsuario === 'ciudadano' ? '/ciudadano' : '/funcionario';
 
     const handleLogout = () => {
-        history.push('/ingresar');
+        cerrarSesion();
+        history.replace('/ingresar');
     };
 
     return (

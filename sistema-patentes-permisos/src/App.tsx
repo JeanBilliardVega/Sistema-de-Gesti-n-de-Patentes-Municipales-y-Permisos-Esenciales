@@ -9,6 +9,7 @@ import DashboardAdmin from "./pages/DashboardAdmin";
 import DetalleSolicitud from "./pages/DetalleSolicitud";
 import NuevaSolicitud from "./pages/NuevaSolicitud";
 import SeguimientoSolicitudes from "./pages/SeguimientoSolicitudes";
+import RutaProtegida from "./components/RutaProtegida";
 
 /* CSS básico requerido para que los componentes de Ionic funcionen correctamente */
 import '@ionic/react/css/core.css';
@@ -47,32 +48,32 @@ const App: React.FC = () => (
         </Route>
 
         {/* CIUDADANO */}
-        <Route exact path="/ciudadano">
+        <RutaProtegida exact path="/ciudadano">
           <Redirect to="/ciudadano/inicio" />
-        </Route>
-        <Route exact path="/ciudadano/inicio">
+        </RutaProtegida>
+        <RutaProtegida exact path="/ciudadano/inicio" rol="ciudadano">
           <DashboardCiudadano />
-        </Route>
-        <Route exact path="/ciudadano/solicitudes">
-          <SeguimientoSolicitudes /> 
-        </Route>
-        <Route exact path="/ciudadano/nueva-solicitud">
+        </RutaProtegida>
+        <RutaProtegida exact path="/ciudadano/solicitudes" rol="ciudadano">
+          <SeguimientoSolicitudes />
+        </RutaProtegida>
+        <RutaProtegida exact path="/ciudadano/nueva-solicitud" rol="ciudadano">
           <NuevaSolicitud />
-        </Route>
-        <Route exact path="/ciudadano/solicitudes/:id">
+        </RutaProtegida>
+        <RutaProtegida exact path="/ciudadano/solicitudes/:id" rol="ciudadano">
           <DetalleSolicitud />
-        </Route>
+        </RutaProtegida>
 
         {/* FUNCIONARIO */}
-        <Route exact path="/funcionario">
+        <RutaProtegida exact path="/funcionario">
           <Redirect to="/funcionario/inicio" />
-        </Route>
-        <Route exact path="/funcionario/inicio">
+        </RutaProtegida>
+        <RutaProtegida exact path="/funcionario/inicio" rol="admin">
           <DashboardAdmin />
-        </Route>
-        <Route exact path="/funcionario/solicitudes/:id">
+        </RutaProtegida>
+        <RutaProtegida exact path="/funcionario/solicitudes/:id" rol="admin">
           <DetalleSolicitud />
-        </Route>
+        </RutaProtegida>
 
       </IonRouterOutlet>
     </IonReactRouter>

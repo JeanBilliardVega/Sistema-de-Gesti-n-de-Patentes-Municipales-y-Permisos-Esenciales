@@ -84,8 +84,8 @@ const Login: React.FC = () => {
                 alert(resultado.mensaje || "Error al iniciar sesión");
                 return;
             }
-            localStorage.setItem('token_patentes', resultado.token);
-            localStorage.setItem('usuario_patentes', JSON.stringify(resultado.usuario));
+            localStorage.setItem('token', resultado.token);
+            localStorage.setItem('usuario', JSON.stringify(resultado.usuario));
             
             const rolUsuario = resultado.usuario.rol;
             if (rolUsuario === 'admin') {
