@@ -18,6 +18,7 @@ type ArchivoSubido = {
     nombre: string;
     tipo: string;
     tamano: string;
+    file: File;
 };
 
 const NuevaSolicitud: React.FC = () => {
@@ -26,15 +27,15 @@ const NuevaSolicitud: React.FC = () => {
     const fileInputRef = useRef<HTMLInputElement>(null);
 
     const [formData, setFormData] = useState({
-        razonSocial: "", rutComercial: "", tipoPatente: "", giro: "", 
+        razonSocial: "", rutComercial: "", tipoPatente: "", giro: "",
         direccion: "", rolAvaluo: "", superficie: "", telefono: "", descripcion: "",
     });
-    
+
     const [archivos, setArchivos] = useState<ArchivoSubido[]>([]);
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     const tiposPatente = [
-        "Patente Comercial", "Patente Industrial", "Patente Profesional", 
+        "Patente Comercial", "Patente Industrial", "Patente Profesional",
         "Patente de Alcoholes", "Microempresa Familiar (MEF)"
     ];
 
@@ -45,7 +46,7 @@ const NuevaSolicitud: React.FC = () => {
         const nuevosArchivos: ArchivoSubido[] = [];
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
-            
+
             if (!file.type.includes("pdf") && !file.type.includes("image")) {
                 presentToast({ message: `${file.name} no es válido (solo PDF o imágenes)`, duration: 3000, color: 'danger' });
                 continue;
@@ -54,15 +55,16 @@ const NuevaSolicitud: React.FC = () => {
                 presentToast({ message: `${file.name} excede el tamaño máximo de 5MB`, duration: 3000, color: 'danger' });
                 continue;
             }
-            
+
             nuevosArchivos.push({
                 id: Math.random().toString(36).substring(2, 9),
                 nombre: file.name,
                 tipo: file.type,
                 tamano: (file.size / 1024).toFixed(2) + " KB",
+                file: file
             });
         }
-        
+
         setArchivos([...archivos, ...nuevosArchivos]);
         if (nuevosArchivos.length > 0) {
             presentToast({ message: `${nuevosArchivos.length} archivo(s) agregado(s)`, duration: 2000, color: 'success' });
@@ -74,7 +76,7 @@ const NuevaSolicitud: React.FC = () => {
         setArchivos(archivos.filter((a) => a.id !== id));
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         const newErrors: Record<string, string> = {};
 
@@ -97,10 +99,28 @@ const NuevaSolicitud: React.FC = () => {
             return;
         }
 
-        presentToast({ message: "Solicitud enviada exitosamente", duration: 2000, color: 'success' });
-        setTimeout(() => {
-            history.push("/ciudadano/inicio");
-        }, 1500);
+        const data = new FormData();
+        Object.entries(formData).forEach(([k, v]) => data.append(k, v));
+        archivos.forEach(archivo => data.append('documentos', archivo.file));
+
+        const token = localStorage.getItem('token');
+        try {
+            const res = await fetch('http://localhost:3000/api/ciudadano/crear_solicitud', {
+                method: 'POST',
+                headers: { 'Authorization': 'Bearer ' + token },
+                body: data
+            });
+
+            const respuesta = await res.json();
+            if (!res.ok) {
+                presentToast({ message: respuesta.error || 'Error al enviar la solicitud', duration: 3000, color: 'danger' });
+                return;
+            }
+            presentToast({ message: 'Solicitud enviada exitosamente', duration: 2000, color: 'success' });
+            setTimeout(() => history.push('/ciudadano/inicio'), 1500);
+        } catch (error) {
+            presentToast({ message: 'No se pudo conectar con el servidor', duration: 3000, color: 'danger' });
+        }
     };
 
     return (

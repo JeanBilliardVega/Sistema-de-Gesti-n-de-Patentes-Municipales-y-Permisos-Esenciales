@@ -17,7 +17,7 @@ const Navbar: React.FC<NavbarProps> = ({ tipoUsuario }) => {
 
     const handleLogout = () => {
         cerrarSesion();
-        history.replace('/ingresar');
+        history.push('/ingresar');
     };
 
     return (

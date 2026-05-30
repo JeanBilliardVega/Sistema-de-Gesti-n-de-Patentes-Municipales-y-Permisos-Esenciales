@@ -3,6 +3,8 @@ const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const cors = require('cors');
+const multer = require('multer');
+const path = require('path');
 const app = express();
 app.use(express.json());
 app.use(cors());
@@ -138,6 +140,74 @@ app.get('/api/obtener_informacion_usuario', verificarToken, async (req, res) => 
     }
 });
 
+const storage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, 'uploads/'),
+    filename: (req, file, cb) => {
+        const unico = Date.now() + '-' + Math.round(Math.random() * 1e9) + path.extname(file.originalname);
+        cb(null, unico);
+    }
+});
+
+const upload = multer({
+    storage,
+    limits: { fileSize: 5 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+        if (file.mimetype === 'application/pdf' || file.mimetype.startsWith('image/')) {
+            cb(null, true);
+        } else {
+            cb(new Error('Solo se permiten archivos PDF o imágenes'));
+        }
+    }
+});
+
+app.post('/api/ciudadano/crear_solicitud', verificarToken, upload.array('documentos', 10), async(req, res) => {
+    const info = req.body || {};
+    const archivos = req.files || [];
+    const camposRequeridos = [
+        'razonSocial', 'rutComercial', 'tipoPatente', 'giro',
+        'direccion', 'rolAvaluo', 'telefono'
+    ];
+    const faltaRellenar = camposRequeridos.filter(campo => !info[campo]);
+    if (faltaRellenar.length > 0) {
+        return res.status(400).json({error: 'Falta rellenar los campos: ' + faltaRellenar});
+    }
+    if (archivos.length === 0) {
+        return res.status(400).json({error: 'Debe adjuntar al menos un documento'});
+    }
+
+    const cliente = await db.connect();
+    try {
+        await cliente.query('BEGIN');
+        const nuevaSolicitud = await cliente.query(
+            `INSERT INTO solicitudes
+                (usuario_id, razon_social, rut_comercial, tipo_patente, giro, direccion, rol_avaluo, superficie, telefono, descripcion)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) 
+            RETURNING id`,
+            [
+                req.usuario.id, info.razonSocial, info.rutComercial, info.tipoPatente, info.giro,
+                info.direccion, info.rolAvaluo, info.superficie || null, info.telefono, info.descripcion || null
+            ]
+        );
+
+        const solicitudId = nuevaSolicitud.rows[0].id;
+        for (const archivo of archivos) {
+            await cliente.query(
+                `INSERT INTO documentos_solicitud (solicitud_id, nombre, tipo, ruta)
+                 VALUES ($1, $2, $3, $4)`,
+                [solicitudId, archivo.originalname, archivo.mimetype, archivo.path]
+            );
+        }
+        await cliente.query('COMMIT');
+        return res.status(201).json({ mensaje: 'Solicitud creada exitosamente tu solicitud con ID ', solicitudId });
+    } catch (error) {
+        await cliente.query('ROLLBACK');
+        console.error('Error al crear solicitud: ' + error);
+        return res.status(500).json({error: 'Error interno del servidor'});
+    } finally {
+        cliente.release();
+    }
+});
+
 app.listen(port, () => {
-    console.log('a');
+    console.log('Servidor corriendo en el puerto ' + port);
 });
