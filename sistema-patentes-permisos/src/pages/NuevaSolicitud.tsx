@@ -1,14 +1,14 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { useHistory } from "react-router-dom";
 import {
-    IonPage, IonContent, IonButton, IonIcon, IonGrid, IonRow, IonCol, 
-    IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent, 
-    IonInput, IonSelect, IonSelectOption, IonTextarea, IonList, IonItem, 
-    IonLabel, useIonToast, IonText
+    IonPage, IonContent, IonButton, IonIcon, IonGrid, IonRow, IonCol,
+    IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle, IonCardContent,
+    IonInput, IonSelect, IonSelectOption, IonTextarea, IonList, IonItem,
+    IonLabel, useIonToast, IonText, IonSpinner
 } from "@ionic/react";
 import {
     cloudUploadOutline, checkmarkOutline, documentTextOutline,
-    closeOutline, arrowBackOutline, businessOutline
+    closeOutline, arrowBackOutline, businessOutline, searchOutline, personOutline
 } from "ionicons/icons";
 import Navbar from "../components/Navbar";
 import './NuevaSolicitud.scss';
@@ -26,6 +26,12 @@ const NuevaSolicitud: React.FC = () => {
     const [presentToast] = useIonToast();
     const fileInputRef = useRef<HTMLInputElement>(null);
 
+    // NUEVO: Estado para datos del dueño
+    const [rutDueno, setRutDueno] = useState("");
+    const [duenoData, setDuenoData] = useState({ nombre: "", email: "" });
+    const [buscando, setBuscando] = useState(false);
+    const [duenoEncontrado, setDuenoEncontrado] = useState(false);
+
     const [formData, setFormData] = useState({
         razonSocial: "", rutComercial: "", tipoPatente: "", giro: "",
         direccion: "", rolAvaluo: "", superficie: "", telefono: "", descripcion: "",
@@ -38,6 +44,35 @@ const NuevaSolicitud: React.FC = () => {
         "Patente Comercial", "Patente Industrial", "Patente Profesional",
         "Patente de Alcoholes", "Microempresa Familiar (MEF)"
     ];
+
+    // NUEVO: Función para buscar por RUT
+    const buscarPorRut = async () => {
+        if (!rutDueno.trim()) {
+            presentToast({ message: "Ingrese un RUT válido", duration: 2000, color: 'warning' });
+            return;
+        }
+        setBuscando(true);
+        try {
+            const res = await fetch(`http://localhost:3000/api/usuario/${rutDueno}`);
+            const data = await res.json();
+            if (!res.ok) {
+                presentToast({ message: data.error || "Usuario no encontrado", duration: 2000, color: 'danger' });
+                setDuenoEncontrado(false);
+                setDuenoData({ nombre: "", email: "" });
+            } else {
+                setDuenoData({
+                    nombre: data.nombre,
+                    email: data.email,
+                });
+                setDuenoEncontrado(true);
+                presentToast({ message: "Datos del dueño cargados", duration: 1500, color: 'success' });
+            }
+        } catch (error) {
+            presentToast({ message: "Error al buscar el RUT", duration: 2000, color: 'danger' });
+        } finally {
+            setBuscando(false);
+        }
+    };
 
     const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
@@ -80,6 +115,12 @@ const NuevaSolicitud: React.FC = () => {
         e.preventDefault();
         const newErrors: Record<string, string> = {};
 
+        // NUEVO: Validar que se haya buscado un dueño válido
+        if (!duenoEncontrado) {
+            presentToast({ message: "Debe buscar un RUT válido del dueño primero", duration: 3000, color: 'warning' });
+            return;
+        }
+
         if (!formData.razonSocial) newErrors.razonSocial = "Requerido";
         if (!formData.rutComercial) newErrors.rutComercial = "Requerido";
         if (!formData.tipoPatente) newErrors.tipoPatente = "Requerido";
@@ -102,6 +143,8 @@ const NuevaSolicitud: React.FC = () => {
         const data = new FormData();
         Object.entries(formData).forEach(([k, v]) => data.append(k, v));
         archivos.forEach(archivo => data.append('documentos', archivo.file));
+        // NUEVO: Enviar el RUT del dueño
+        data.append('rutDueno', rutDueno);
 
         const token = localStorage.getItem('token');
         try {
@@ -129,7 +172,7 @@ const NuevaSolicitud: React.FC = () => {
 
             <IonContent className="form-bg">
                 <div className="form-wrapper">
-                    
+
                     <div className="header-actions">
                         <IonButton fill="clear" color="medium" onClick={() => history.push("/ciudadano/inicio")} className="btn-volver">
                             <IonIcon slot="start" icon={arrowBackOutline} />
@@ -139,6 +182,57 @@ const NuevaSolicitud: React.FC = () => {
                     </div>
 
                     <form onSubmit={handleSubmit}>
+                        {/* NUEVA SECCIÓN: Datos del Dueño (búsqueda por RUT) */}
+                        <IonCard className="form-card">
+                            <IonCardHeader className="card-header-flex">
+                                <div className="card-icon">
+                                    <IonIcon icon={personOutline} />
+                                </div>
+                                <div>
+                                    <IonCardTitle>Datos del Dueño / Solicitante</IonCardTitle>
+                                    <IonCardSubtitle>Ingrese el RUT del dueño para cargar sus datos automáticamente</IonCardSubtitle>
+                                </div>
+                            </IonCardHeader>
+                            <IonCardContent>
+                                <IonGrid className="ion-no-padding custom-form-grid">
+                                    <IonRow>
+                                        <IonCol size="12" sizeMd="6">
+                                            <div className="input-group">
+                                                <IonInput
+                                                    label="RUT del Dueño *"
+                                                    labelPlacement="stacked"
+                                                    fill="outline"
+                                                    placeholder="Ej: 12.345.678-9"
+                                                    value={rutDueno}
+                                                    onIonInput={e => setRutDueno(e.detail.value!)}
+                                                />
+                                            </div>
+                                        </IonCol>
+                                        <IonCol size="12" sizeMd="2" className="ion-align-self-center">
+                                            <IonButton expand="block" onClick={buscarPorRut} disabled={buscando}>
+                                                {buscando ? <IonSpinner name="crescent" /> : <><IonIcon icon={searchOutline} /> Buscar</>}
+                                            </IonButton>
+                                        </IonCol>
+                                    </IonRow>
+                                    {duenoEncontrado && (
+                                        <IonRow>
+                                            <IonCol size="12" sizeMd="6">
+                                                <div className="input-group">
+                                                    <IonInput label="Nombre Completo" labelPlacement="stacked" fill="outline" value={duenoData.nombre} readonly disabled />
+                                                </div>
+                                            </IonCol>
+                                            <IonCol size="12" sizeMd="6">
+                                                <div className="input-group">
+                                                    <IonInput label="Correo Electrónico" labelPlacement="stacked" fill="outline" value={duenoData.email} readonly disabled />
+                                                </div>
+                                            </IonCol>
+                                        </IonRow>
+                                    )}
+                                </IonGrid>
+                            </IonCardContent>
+                        </IonCard>
+
+                        {/* TU SECCIÓN ORIGINAL: Información del Negocio (sin cambios) */}
                         <IonCard className="form-card">
                             <IonCardHeader className="card-header-flex">
                                 <div className="card-icon">
@@ -213,6 +307,7 @@ const NuevaSolicitud: React.FC = () => {
                             </IonCardContent>
                         </IonCard>
 
+                        {/* TU SECCIÓN ORIGINAL: Documentos Obligatorios (sin cambios) */}
                         <IonCard className="form-card">
                             <IonCardHeader>
                                 <IonCardTitle>Documentos Obligatorios</IonCardTitle>
