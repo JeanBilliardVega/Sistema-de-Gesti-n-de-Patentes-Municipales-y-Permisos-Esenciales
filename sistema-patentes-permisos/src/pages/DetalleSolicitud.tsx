@@ -37,7 +37,7 @@ const DetalleSolicitud: React.FC = () => {
     const userData = JSON.parse(localStorage.getItem('usuario') || '{}');
     const esAdmin = userData.rol === 'admin';
 
-    const [nuevoMensaje, setNuevoMensaje] = useState("");
+    const [nuevoMensaje] = useState("");
     const [nuevoEstado, setNuevoEstado] = useState("");
 
     useEffect(() => {

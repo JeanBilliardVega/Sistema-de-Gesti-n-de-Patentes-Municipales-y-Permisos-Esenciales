@@ -4,7 +4,6 @@ import { IonHeader, IonToolbar, IonButtons, IonButton, IonIcon } from '@ionic/re
 import { homeOutline, documentTextOutline, logOutOutline } from 'ionicons/icons';
 import { useHistory } from 'react-router-dom';
 import './Navbar.scss';
-import { cerrarSesion } from '../auth/Usuario';
 
 interface NavbarProps {
     tipoUsuario: 'ciudadano' | 'funcionario';
