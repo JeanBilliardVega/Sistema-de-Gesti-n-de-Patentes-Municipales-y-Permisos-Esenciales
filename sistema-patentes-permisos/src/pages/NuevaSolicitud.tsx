@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef} from "react";
 import { useHistory } from "react-router-dom";
 import {
     IonPage, IonContent, IonButton, IonIcon, IonGrid, IonRow, IonCol,
@@ -67,7 +67,7 @@ const NuevaSolicitud: React.FC = () => {
                 setDuenoEncontrado(true);
                 presentToast({ message: "Datos del dueño cargados", duration: 1500, color: 'success' });
             }
-        } catch (error) {
+        } catch{
             presentToast({ message: "Error al buscar el RUT", duration: 2000, color: 'danger' });
         } finally {
             setBuscando(false);
@@ -161,7 +161,7 @@ const NuevaSolicitud: React.FC = () => {
             }
             presentToast({ message: 'Solicitud enviada exitosamente', duration: 2000, color: 'success' });
             setTimeout(() => history.push('/ciudadano/inicio'), 1500);
-        } catch (error) {
+        } catch{
             presentToast({ message: 'No se pudo conectar con el servidor', duration: 3000, color: 'danger' });
         }
     };

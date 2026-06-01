@@ -1,21 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { useHistory } from "react-router-dom";
 import {
-    IonPage, IonContent, IonButton, IonIcon, IonGrid,
-    IonRow, IonCol, IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle,
-    IonCardContent, IonSelect, IonSelectOption, IonBadge, IonProgressBar, IonSpinner
+    IonPage, IonContent, IonButton, IonIcon,
+    IonCard, IonCardHeader, IonCardTitle, IonCardSubtitle,
+    IonCardContent, IonSelect, IonSelectOption, IonBadge, IonSpinner
 } from "@ionic/react";
 import {
     arrowBackOutline, documentTextOutline, timeOutline, checkmarkCircleOutline,
-    alertCircleOutline, closeCircleOutline, filterOutline
+    alertCircleOutline, closeCircleOutline
 } from "ionicons/icons";
 import Navbar from "../components/Navbar";
 import './SeguimientoSolicitudes.scss';
 
+import { SolicitudRaw, SolicitudSeguimiento } from '../types';
+
 const SeguimientoSolicitudes: React.FC = () => {
     const history = useHistory();
     const [filtroEstado, setFiltroEstado] = useState<string>("todas");
-    const [solicitudes, setSolicitudes] = useState<any[]>([]);
+    const [solicitudes, setSolicitudes] = useState<SolicitudSeguimiento[]>([]);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
@@ -34,11 +36,11 @@ const SeguimientoSolicitudes: React.FC = () => {
                     const datosBD = await respuesta.json();
 
                     // Mapeo de los datos reales de la BD al formato del componente
-                    const solicitudesFormateadas = datosBD.map((sol: any) => {
+                    const solicitudesFormateadas: SolicitudSeguimiento[] = datosBD.map((sol: SolicitudRaw) => {
                         let color = "primary";
                         let icon = timeOutline;
                         let progreso = 30; // Valor base
-                        let estadoTexto = sol.estado || "Revisión";
+                        const estadoTexto = sol.estado || "Revisión";
 
                         // Lógica de colores y estados basada en el campo 'estado' de la BD
                         if (estadoTexto === 'Aprobada') { color = 'success'; icon = checkmarkCircleOutline; progreso = 100; }

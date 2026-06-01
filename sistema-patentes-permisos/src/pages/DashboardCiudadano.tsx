@@ -12,6 +12,8 @@ import {
 import Navbar from "../components/Navbar";
 import './DashboardCiudadano.scss';
 
+import { SolicitudRaw, SolicitudFormateada} from '../types';
+
 // Genera ID visual tipo SOL-2026-001
 const formatearIdVisual = (idNumerico: number, fechaCreacion: string) => {
     const año = new Date(fechaCreacion).getFullYear();
@@ -21,7 +23,7 @@ const formatearIdVisual = (idNumerico: number, fechaCreacion: string) => {
 const DashboardCiudadano: React.FC = () => {
     const history = useHistory();
     const [searchTerm, setSearchTerm] = useState("");
-    const [solicitudes, setSolicitudes] = useState<any[]>([]);
+    const [solicitudes, setSolicitudes] = useState<SolicitudFormateada[]>([]);
     const [loading, setLoading] = useState(true);
     const [nombreUsuario, setNombreUsuario] = useState("");
 
@@ -29,7 +31,7 @@ const DashboardCiudadano: React.FC = () => {
         const cargarDatos = async () => {
             try {
                 const token = localStorage.getItem('token');
-                const userStr = localStorage.getItem('user');
+                const userStr = localStorage.getItem('usuario');
                 if (userStr) {
                     const user = JSON.parse(userStr);
                     setNombreUsuario(user.nombre || "Usuario");
@@ -40,10 +42,10 @@ const DashboardCiudadano: React.FC = () => {
                 });
                 if (respuesta.ok) {
                     const datos = await respuesta.json();
-                    const solicitudesFormateadas = datos.map((sol: any) => {
+                    const solicitudesFormateadas: SolicitudFormateada[] = datos.map((sol: SolicitudRaw) => {
                         let color = "primary";
                         let icon = timeOutline;
-                        let estadoTexto = sol.estado || "pendiente";
+                        const estadoTexto = sol.estado || "pendiente";
 
                         if (estadoTexto === 'aprobada') { color = 'success'; icon = checkmarkCircleOutline; }
                         else if (estadoTexto === 'observada') { color = 'warning'; icon = alertCircleOutline; }

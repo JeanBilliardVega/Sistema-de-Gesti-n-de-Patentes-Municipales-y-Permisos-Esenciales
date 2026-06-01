@@ -15,8 +15,10 @@ import {
 import Navbar from "../components/Navbar";
 import './DetalleSolicitud.scss';
 
+import { SolicitudRaw, Documento } from '../types';
+
 interface LocationState {
-    solicitud?: any;
+    solicitud?: SolicitudRaw;
 }
 
 const formatearIdVisual = (idNumerico: number, fechaCreacion: string) => {
@@ -30,53 +32,51 @@ const DetalleSolicitud: React.FC = () => {
     const location = useLocation<LocationState>();
     const [presentToast] = useIonToast();
     const [loading, setLoading] = useState(true);
-    const [solicitud, setSolicitud] = useState<any>(null);
+    const [solicitud, setSolicitud] = useState<SolicitudRaw | null>(null);
 
-    // ✅ OBTENER ROL DESDE EL OBJETO USER (más seguro)
-    const userData = JSON.parse(localStorage.getItem('user') || '{}');
+    const userData = JSON.parse(localStorage.getItem('usuario') || '{}');
     const esAdmin = userData.rol === 'admin';
 
     const [nuevoMensaje, setNuevoMensaje] = useState("");
     const [nuevoEstado, setNuevoEstado] = useState("");
 
     useEffect(() => {
-        const cargarDetalle = async () => {
-            if (location.state?.solicitud) {
-                setSolicitud(location.state.solicitud);
-                setNuevoEstado(location.state.solicitud.estado || 'pendiente');
-                setLoading(false);
-                return;
-            }
+        if (location.state?.solicitud) {
+            setSolicitud(location.state.solicitud);
+            setNuevoEstado(location.state.solicitud.estado || 'pendiente');
+            setLoading(false);
+            return;
+        }
+
+        const cargarDesdeApi = async () => {
             try {
                 setLoading(true);
                 const token = localStorage.getItem('token');
-                const respuesta = await fetch('http://localhost:3000/api/ciudadano/mis_solicitudes', {
+                const usuarioStr = localStorage.getItem('usuario');
+                const usuario = usuarioStr ? JSON.parse(usuarioStr) : {};
+                const esAdminLocal = usuario?.rol === 'admin';
+
+                const url = esAdminLocal
+                    ? `http://localhost:3000/api/funcionario/solicitud/${id}`
+                    : `http://localhost:3000/api/ciudadano/solicitud/${id}`;
+
+                const respuesta = await fetch(url, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
+
                 if (respuesta.ok) {
-                    const todas = await respuesta.json();
-                    const encontrada = todas.find((s: any) => s.id === parseInt(id));
-                    if (encontrada) {
-                        setSolicitud(encontrada);
-                        setNuevoEstado(encontrada.estado || 'pendiente');
-                    } else {
-                        presentToast({ message: 'Solicitud no encontrada', duration: 2000, color: 'danger' });
-                        history.goBack();
-                    }
+                    const data = await respuesta.json();
+                    setSolicitud(data);
+                    setNuevoEstado(data.estado || 'pendiente');
                 } else {
-                    presentToast({ message: 'Error al cargar la solicitud', duration: 2000, color: 'danger' });
-                    history.goBack();
+                    console.warn('No se pudo cargar la solicitud');
                 }
-            } catch (error) {
-                console.error(error);
-                presentToast({ message: 'Error de conexión', duration: 2000, color: 'danger' });
-                history.goBack();
             } finally {
                 setLoading(false);
             }
         };
-        cargarDetalle();
-    }, [id, history, presentToast, location.state]);
+        cargarDesdeApi();
+    }, [id, location.state]);
 
     const handleEnviarMensaje = () => {
         presentToast({ message: 'Funcionalidad en desarrollo (requiere backend)', duration: 2000, color: 'warning' });
@@ -106,10 +106,10 @@ const DetalleSolicitud: React.FC = () => {
             estadoTexto === 'rechazada' ? 'danger' :
                 estadoTexto === 'observada' ? 'warning' : 'primary';
 
-    const ciudadanoNombre = solicitud.ciudadano_nombre || userData.nombre || 'No disponible';
-    const ciudadanoRut = solicitud.ciudadano_rut || userData.rut || 'No disponible';
-    const ciudadanoEmail = solicitud.ciudadano_email || userData.email || 'No disponible';
-    const ciudadanoTelefono = solicitud.telefono || userData.telefono || 'No disponible';
+    const ciudadanoNombre = solicitud.ciudadano_nombre || 'No disponible';
+    const ciudadanoRut    = solicitud.ciudadano_rut    || 'No disponible';
+    const ciudadanoEmail  = solicitud.ciudadano_email  || 'No disponible';
+    const ciudadanoTelefono = solicitud.telefono       || 'No disponible';
     const documentos = solicitud.documentos || [];
 
     return (
@@ -182,7 +182,7 @@ const DetalleSolicitud: React.FC = () => {
                                     <IonCardContent>
                                         {documentos.length > 0 ? (
                                             <IonList className="doc-list">
-                                                {documentos.map((doc: any, idx: number) => (
+                                                {documentos.map((doc: Documento, idx: number) => (
                                                     <IonItem key={idx} className="doc-item" lines="none">
                                                         <div slot="start" className="doc-icon-wrapper"><IonIcon icon={documentTextOutline} className="doc-icon" /></div>
                                                         <IonLabel><h2>{doc.nombre}</h2><p>{doc.tipo?.split('/')[1]?.toUpperCase() || 'DOC'}</p></IonLabel>

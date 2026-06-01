@@ -16,8 +16,11 @@ const Navbar: React.FC<NavbarProps> = ({ tipoUsuario }) => {
     const baseUrl = tipoUsuario === 'ciudadano' ? '/ciudadano' : '/funcionario';
 
     const handleLogout = () => {
-        cerrarSesion();
-        history.push('/ingresar');
+        localStorage.removeItem('token');
+        localStorage.removeItem('usuario');
+        localStorage.removeItem('user');
+
+        window.location.replace('/ingresar');
     };
 
     return (

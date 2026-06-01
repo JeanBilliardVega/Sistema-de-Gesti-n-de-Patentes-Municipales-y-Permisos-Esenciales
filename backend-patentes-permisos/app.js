@@ -13,7 +13,7 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 const port = 3000;
 /* Conexion db, la informacion esta en docker-compose.yml */
 const db = new Pool({
-    user: 'postgres',
+    user: 'admin',
     password: '1234',
     host: '127.0.0.1',
     port: '5432',
@@ -253,10 +253,6 @@ app.get('/api/ciudadano/mis_solicitudes', verificarToken, async (req, res) => {
     }
 });
 
-app.listen(port, () => {
-    console.log('Servidor corriendo en el puerto ' + port);
-});
-
 // Endpoint público para obtener datos de un usuario por RUT
 app.get('/api/usuario/:rut', async (req, res) => {
     const { rut } = req.params;
@@ -275,5 +271,106 @@ app.get('/api/usuario/:rut', async (req, res) => {
         console.error(error);
         res.status(500).json({ error: 'Error interno' });
     }
+});
+
+app.get('/api/ciudadano/solicitud/:id', verificarToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const peticion = await db.query(
+            `SELECT s.*, 
+                    u.nombre as ciudadano_nombre,
+                    u.rut as ciudadano_rut,
+                    u.email as ciudadano_email,
+                    u.comuna as ciudadano_comuna
+             FROM solicitudes s
+             JOIN usuarios u ON s.usuario_id = u.id
+             WHERE s.id = $1 AND s.usuario_id = $2`,
+            [id, req.usuario.id]
+        );
+        if (peticion.rows.length === 0) {
+            return res.status(404).json({ error: 'Solicitud no encontrada' });
+        }
+        const sol = peticion.rows[0];
+        const docs = await db.query(
+            `SELECT id, nombre, ruta, tipo FROM documentos_solicitud WHERE solicitud_id = $1`,
+            [sol.id]
+        );
+        sol.documentos = docs.rows;
+        return res.status(200).json(sol);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
+
+// Endpoint para el administrador
+app.get('/api/funcionario/todas_solicitudes', verificarToken, async (req, res) => {
+    if (req.usuario.rol !== 'admin') {
+        return res.status(403).json({ error: 'Acceso denegado. Requiere privilegios de administrador.' });
+    }
+
+    try {
+        const peticion = await db.query(
+            `SELECT s.*,
+                    u.nombre  AS ciudadano_nombre,
+                    u.rut     AS ciudadano_rut,
+                    u.email   AS ciudadano_email,
+                    u.comuna  AS ciudadano_comuna
+             FROM solicitudes s
+                      JOIN usuarios u ON s.usuario_id = u.id
+             ORDER BY s.id DESC`
+        );
+
+        const solicitudes = peticion.rows;
+        for (let sol of solicitudes) {
+            const docs = await db.query(
+                `SELECT id, nombre, ruta FROM documentos_solicitud WHERE solicitud_id = $1`,
+                [sol.id]
+            );
+            sol.documentos = docs.rows;
+        }
+
+        return res.status(200).json(solicitudes);
+    } catch (error) {
+        console.error('Error al obtener todas las solicitudes: ' + error);
+        return res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
+
+app.get('/api/funcionario/solicitud/:id', verificarToken, async (req, res) => {
+    if (req.usuario.rol !== 'admin') {
+        return res.status(403).json({ error: 'Acceso denegado' });
+    }
+    try {
+        const { id } = req.params;
+        const peticion = await db.query(
+            `SELECT s.*,
+                    u.nombre as ciudadano_nombre,
+                    u.rut as ciudadano_rut,
+                    u.email as ciudadano_email,
+                    u.comuna as ciudadano_comuna
+             FROM solicitudes s
+             JOIN usuarios u ON s.usuario_id = u.id
+             WHERE s.id = $1`,
+            [id]
+        );
+        if (peticion.rows.length === 0) {
+            return res.status(404).json({ error: 'Solicitud no encontrada' });
+        }
+        const sol = peticion.rows[0];
+        const docs = await db.query(
+            `SELECT id, nombre, ruta, tipo FROM documentos_solicitud WHERE solicitud_id = $1`,
+            [sol.id]
+        );
+        sol.documentos = docs.rows;
+        return res.status(200).json(sol);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
+
+app.listen(port, () => {
+    console.log('Servidor corriendo en el puerto ' + port);
 });
 
