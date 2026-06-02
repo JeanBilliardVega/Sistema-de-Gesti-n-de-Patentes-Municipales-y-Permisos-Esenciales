@@ -52,11 +52,22 @@ const crearTablas = async () => {
     );
   `;
 
+  const queryMensajes = `
+    CREATE TABLE IF NOT EXISTS mensajes (
+        id SERIAL PRIMARY KEY,
+        solicitud_id INTEGER NOT NULL REFERENCES solicitudes(id) ON DELETE CASCADE,
+        usuario_id INTEGER NOT NULL REFERENCES usuarios(id),
+        contenido TEXT NOT NULL,
+        fecha_envio TIMESTAMP NOT NULL DEFAULT NOW()
+    );
+`;
+
   try {
     console.log('Conectando a la base de datos...');
     await pool.query(queryUsuarios);
     await pool.query(querySolicitudes);
     await pool.query(queryDocumentos);
+    await pool.query(queryMensajes);
     console.log('Tablas creadas con éxito (o ya existían).');
   } catch (error) {
     console.error('Error al crear las tablas:', error);

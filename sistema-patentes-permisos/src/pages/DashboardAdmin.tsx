@@ -309,6 +309,27 @@ const DashboardAdmin: React.FC = () => {
                                                     >
                                                         Gestionar
                                                     </IonButton>
+                                                    <IonButton
+                                                        fill="outline"
+                                                        size="small"
+                                                        color="danger"
+                                                        onClick={async (e) => {
+                                                            e.stopPropagation();
+                                                            if (!window.confirm('¿Estás seguro de eliminar esta solicitud?')) return;
+                                                            const token = localStorage.getItem('token');
+                                                            const res = await fetch(`http://localhost:3000/api/funcionario/solicitud/${solicitud.idReal}`, {
+                                                                method: 'DELETE',
+                                                                headers: { 'Authorization': `Bearer ${token}` }
+                                                            });
+                                                            if (res.ok) {
+                                                                setSolicitudes(prev => prev.filter(s => s.idReal !== solicitud.idReal));
+                                                            } else {
+                                                                alert('Error al eliminar la solicitud');
+                                                            }
+                                                        }}
+                                                    >
+                                                        Eliminar
+                                                    </IonButton>
                                                 </div>
                                             </IonItem>
                                         ))

@@ -370,6 +370,105 @@ app.get('/api/funcionario/solicitud/:id', verificarToken, async (req, res) => {
     }
 });
 
+// PUT - Cambiar estado de solicitud (solo admin)
+app.put('/api/funcionario/solicitud/:id/estado', verificarToken, async (req, res) => {
+    if (req.usuario.rol !== 'admin') {
+        return res.status(403).json({ error: 'Acceso denegado' });
+    }
+    const { estado } = req.body;
+    const { id } = req.params;
+    const estadosValidos = ['pendiente', 'revisión', 'observada', 'aprobada', 'rechazada'];
+    if (!estado || !estadosValidos.includes(estado)) {
+        return res.status(400).json({ error: 'Estado no válido' });
+    }
+    try {
+        const resultado = await db.query(
+            'UPDATE solicitudes SET estado = $1 WHERE id = $2 RETURNING *',
+            [estado, id]
+        );
+        if (resultado.rows.length === 0) {
+            return res.status(404).json({ error: 'Solicitud no encontrada' });
+        }
+        return res.status(200).json({ mensaje: 'Estado actualizado correctamente', solicitud: resultado.rows[0] });
+    } catch (error) {
+        console.error('Error al actualizar estado:', error);
+        return res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
+
+// POST - Enviar mensaje (admin y ciudadano)
+app.post('/api/solicitud/:id/mensaje', verificarToken, async (req, res) => {
+    const { contenido } = req.body;
+    const { id } = req.params;
+    if (!contenido || contenido.trim() === '') {
+        return res.status(400).json({ error: 'El mensaje no puede estar vacío' });
+    }
+    try {
+        // Verificar que la solicitud existe y que el ciudadano solo pueda escribir en sus propias solicitudes
+        const solRes = await db.query('SELECT * FROM solicitudes WHERE id = $1', [id]);
+        if (solRes.rows.length === 0) {
+            return res.status(404).json({ error: 'Solicitud no encontrada' });
+        }
+        if (req.usuario.rol !== 'admin' && solRes.rows[0].usuario_id !== req.usuario.id) {
+            return res.status(403).json({ error: 'No tienes permiso para escribir en esta solicitud' });
+        }
+        const resultado = await db.query(
+            'INSERT INTO mensajes (solicitud_id, usuario_id, contenido) VALUES ($1, $2, $3) RETURNING *',
+            [id, req.usuario.id, contenido.trim()]
+        );
+        return res.status(201).json({ mensaje: 'Mensaje enviado', data: resultado.rows[0] });
+    } catch (error) {
+        console.error('Error al enviar mensaje:', error);
+        return res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
+
+// GET - Obtener mensajes de una solicitud
+app.get('/api/solicitud/:id/mensajes', verificarToken, async (req, res) => {
+    const { id } = req.params;
+    try {
+        // Verificar acceso
+        const solRes = await db.query('SELECT * FROM solicitudes WHERE id = $1', [id]);
+        if (solRes.rows.length === 0) {
+            return res.status(404).json({ error: 'Solicitud no encontrada' });
+        }
+        if (req.usuario.rol !== 'admin' && solRes.rows[0].usuario_id !== req.usuario.id) {
+            return res.status(403).json({ error: 'Acceso denegado' });
+        }
+        const resultado = await db.query(
+            `SELECT m.*, u.nombre as autor_nombre, u.rol as autor_rol
+             FROM mensajes m
+             JOIN usuarios u ON m.usuario_id = u.id
+             WHERE m.solicitud_id = $1
+             ORDER BY m.fecha_envio ASC`,
+            [id]
+        );
+        return res.status(200).json(resultado.rows);
+    } catch (error) {
+        console.error('Error al obtener mensajes:', error);
+        return res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
+
+app.delete('/api/funcionario/solicitud/:id', verificarToken, async (req, res) => {
+    if (req.usuario.rol !== 'admin') {
+        return res.status(403).json({ error: 'Acceso denegado' });
+    }
+    try {
+        const resultado = await db.query(
+            'DELETE FROM solicitudes WHERE id = $1 RETURNING *',
+            [req.params.id]
+        );
+        if (resultado.rows.length === 0) {
+            return res.status(404).json({ error: 'Solicitud no encontrada' });
+        }
+        return res.status(200).json({ mensaje: 'Solicitud eliminada correctamente' });
+    } catch (error) {
+        console.error('Error al eliminar solicitud:', error);
+        return res.status(500).json({ error: 'Error interno del servidor' });
+    }
+});
+
 app.listen(port, () => {
     console.log('Servidor corriendo en el puerto ' + port);
 });

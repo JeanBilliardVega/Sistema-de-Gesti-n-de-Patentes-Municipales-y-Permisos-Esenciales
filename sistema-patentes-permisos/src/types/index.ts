@@ -69,3 +69,15 @@ export interface SolicitudSeguimiento {
     progreso: number;
     ultimaActualizacion: string;
 }
+
+export interface LocationState {
+    solicitud?: SolicitudRaw;
+}
+
+export interface Mensaje {
+    id: number;
+    contenido: string;
+    autor_nombre: string;
+    autor_rol: string;
+    fecha_envio: string;
+}

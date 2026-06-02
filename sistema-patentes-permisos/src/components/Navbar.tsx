@@ -39,11 +39,13 @@ const Navbar: React.FC<NavbarProps> = ({ tipoUsuario }) => {
                         <IonIcon slot="start" icon={homeOutline} />
                         <span className="nav-text">Inicio</span>
                     </IonButton>
-                    
-                    <IonButton onClick={() => history.push(`${baseUrl}/solicitudes`)} className="nav-link">
-                        <IonIcon slot="start" icon={documentTextOutline} />
-                        <span className="nav-text">Solicitudes</span>
-                    </IonButton>
+
+                    {tipoUsuario === 'ciudadano' && (
+                        <IonButton onClick={() => history.push(`${baseUrl}/solicitudes`)} className="nav-link">
+                            <IonIcon slot="start" icon={documentTextOutline} />
+                            <span className="nav-text">Solicitudes</span>
+                        </IonButton>
+                    )}
 
                     <IonButton onClick={handleLogout} className="nav-link logout-btn">
                         <IonIcon slot="start" icon={logOutOutline} />
