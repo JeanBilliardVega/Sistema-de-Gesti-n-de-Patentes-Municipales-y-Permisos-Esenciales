@@ -1,9 +1,67 @@
 # Sistema de Gestión de Patentes Municipales y Permisos Esenciales
 
+## Integrantes del grupo
+* Hans Silva
+* Jean Billiard
+* Zhiheng Lei
+
 ## Descripción del Proyecto
 
 Aplicación móvil construida con **Ionic + React** (TypeScript) para reducir los tiempos de obtención de patentes municipales y permisos esenciales mediante la digitalización, seguimiento en tiempo real y comunicación directa entre ciudadanos (solicitantes) y la entidad municipal (administradores).
 
+---
+## Requisitos Previos
+
+- [Node.js](https://nodejs.org/) v18 o superior
+- [Docker Desktop](https://www.docker.com/products/docker-desktop/)
+- [Ionic CLI](https://ionicframework.com/docs/cli): `npm install -g @ionic/cli`
+- IDE recomendado: [WebStorm](https://www.jetbrains.com/webstorm/) o [Visual Studio Code](https://code.visualstudio.com/)
+
+---
+## Pasos para ejecutar el proyecto
+
+1. **Descargar el repositorio y extraerlo** en tu computadora.
+2. **Cambiar la terminal de PowerShell a CMD (Command Prompt)**.
+3. Abre dos terminales (Una para el backend y la base de datos, la otra para frontend) y ejecutar:
+
+**Paso opcional (solo si no tienes Vite instalado):** 
+Durante la ejecución, si te pregunta si deseas instalar Vite, selecciona **Yes** y espera a que termine la instalación.
+
+### 1. Terminal 1: Base de datos (Docker) y Backend
+Primero accede a la carpeta backend-patentes-permisos
+```bash
+cd backend-patentes-permisos
+```
+#### 1.1. Base de datos (Docker)
+```bash
+docker-compose up -d
+node crearTablas.js
+```
+#### 1.2. Backend
+```bash
+npm install
+node app.js
+```
+
+### 2. Terminal 2: Frontend
+```bash
+cd sistema-patentes-permisos
+npm install
+ionic serve
+```
+## Acceso al panel del administrador (Se puede crear y utilizar una terminal 3 para realizar operaciones en la BD)
+
+Para crear un usuario administrador, registrar un usuario normal y luego
+cambiar su rol directamente en la base de datos:
+
+Primero accede a la base de datos
+```bash
+docker exec -it web_movil psql -U admin -d db_patentes_permisos
+```
+Luego cambia el rol del usuario X como admin
+```sql
+UPDATE usuarios SET rol = 'admin' WHERE rut = 'rut del usuario a cambiar';
+```
 ---
 ## EP 1.1: Requerimientos funcionales (7) y no funcionales (3)
 
@@ -50,66 +108,36 @@ Esto afecta directamente la economía local, desincentiva el emprendimiento y ge
 | **Funcionario municipal (Admin)** | Personal de la ventanilla única o departamento de rentas. Manejo de expedientes. | Gestión eficiente de solicitudes, validación de documentos, comunicación con solicitantes, estadísticas. |
 
 ---
+## EP 2.3: API Endpoints
 
-# Sistema de Patentes y Permisos
+### Autenticación (público)
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| POST | `/api/registrar` | Registrar nuevo usuario |
+| POST | `/api/iniciar_sesion` | Iniciar sesión, retorna JWT |
+| GET | `/api/usuario/:rut` | Obtener datos de usuario por RUT |
 
-## Requisitos
+### Ciudadano (requiere JWT)
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/api/ciudadano/mis_solicitudes` | Listar mis solicitudes |
+| GET | `/api/ciudadano/solicitud/:id` | Ver detalle de una solicitud |
+| POST | `/api/ciudadano/crear_solicitud` | Crear nueva solicitud (multipart/form-data) |
 
-- Tener instalado [Node.js](https://nodejs.org/)
-- Usar [WebStorm](https://www.jetbrains.com/webstorm/) o [Visual Studio Code](https://code.visualstudio.com/)
+### Funcionario Admin (requiere JWT + rol admin)
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/api/funcionario/todas_solicitudes` | Listar todas las solicitudes |
+| GET | `/api/funcionario/solicitud/:id` | Ver detalle de cualquier solicitud |
+| PUT | `/api/funcionario/solicitud/:id/estado` | Actualizar estado de solicitud |
+| DELETE | `/api/funcionario/solicitud/:id` | Eliminar solicitud |
 
-## Pasos para ejecutar la aplicación
-
-1. **Descargar el repositorio y extraerlo** en tu computadora.
-2. **Cambiar la terminal de PowerShell a CMD (Command Prompt)**.
-3. Abrir la terminal y ejecutar:
-```
-
-cd sistema-patentes-permisos
-
-```
-4. Instalar Ionic CLI de manera global:
-```
-
-npm install -g @ionic/cli
-
-```
-5. Ejecutar la aplicación:
-```
-
-ionic serve
-
-```
-6. **Paso opcional (solo si no tienes Vite instalado):**  
-Durante la ejecución, si te pregunta si deseas instalar Vite, selecciona **Yes** y espera a que termine la instalación.
-7. ¡Listo! Ahora puedes usar la aplicación en tu navegador.
+### Mensajes (requiere JWT)
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| GET | `/api/solicitud/:id/mensajes` | Obtener mensajes de una solicitud |
+| POST | `/api/solicitud/:id/mensaje` | Enviar mensaje en una solicitud |
 
 ---
-
-## Guía de Uso Rápido
-
-Para facilitar las pruebas de la aplicación sin necesidad de una base de datos real, se han habilitado las siguientes credenciales y reglas de validación:
-
-### 1. Inicio de Sesión (Login)
-Existen dos formas de ingresar dependiendo del rol que desees probar:
-
-* **Modo Administrador:** * **RUT:** Escribe la palabra `admin`.
-    * **Contraseña:** Cualquier combinación de **8 o más caracteres**.
-* **Modo Ciudadano:** * Puedes usar cualquier RUT que sea matemáticamente válido (Incluyendo el tuyo propio o de algún pariente/conocido/amigo que conozcas). El formato acepta textos con o sin puntos, y con o sin guión, es decir: Con puntos y guión, sin puntos y guión, o sin puntos y sin guión. Aquí tienes 5 ejemplos listos para usar en caso de querer hacerlo más rápido:
-        1.  `11.111.111-1`
-        2.  `12.345.678-5`
-        3.  `22.222.222-2`
-        4.  `10.101.101-K`
-        5.  `20.202.202-7`
-    * **Contraseña:** Cualquier combinación de **8 o más caracteres**.
-
-### 2. Registro de Usuarios
-El formulario de registro cuenta con validaciones flexibles para agilizar las pruebas:
-* **Nombre:** Puedes ingresar cualquier nombre.
-* **RUT:** Debe ser un RUT válido (puedes usar los ejemplos anteriores).
-* **Correo Electrónico:** Se acepta cualquier formato básico (Ej: `pedro@mail.com`).
-* **Contraseña:** Debe tener un mínimo de **8 caracteres**.
-* **Persistencia:** Por motivos de demostración técnica, los datos registrados **no se almacenan de forma permanente** en una base de datos. Al cerrar la sesión o recargar, el sistema volverá a sus valores predeterminados.
-
-### 3. Navegación Post-Login
-Independientemente del nombre ingresado en el registro, el sistema mostrará un perfil predeterminado en el Dashboard para demostrar la interfaz de usuario y el flujo de los RFs (Requerimientos Funcionales).
+## EP2.7: Capturas de pruebas con Postman y Modelo ER
+Capturas de pruebas con Postman y el Modelo Entidad Relación se encuentra en la carpeta "otros".
