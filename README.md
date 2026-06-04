@@ -108,6 +108,14 @@ Esto afecta directamente la economía local, desincentiva el emprendimiento y ge
 | **Funcionario municipal (Admin)** | Personal de la ventanilla única o departamento de rentas. Manejo de expedientes. | Gestión eficiente de solicitudes, validación de documentos, comunicación con solicitantes, estadísticas. |
 
 ---
+
+## EP 2: Descripción de la entrega
+Implementación del backend con Node.js + Express, base de datos PostgreSQL, 
+autenticación JWT con diferenciación de roles, integración frontend-backend 
+y pruebas funcionales con Postman.
+
+---
+
 ## EP 2.3: API Endpoints
 
 ### Autenticación (público)
