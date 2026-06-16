@@ -1,4 +1,5 @@
 export interface SolicitudRaw {
+    rut_comercial: string;
     id: number;
     estado: string;
     razon_social: string;

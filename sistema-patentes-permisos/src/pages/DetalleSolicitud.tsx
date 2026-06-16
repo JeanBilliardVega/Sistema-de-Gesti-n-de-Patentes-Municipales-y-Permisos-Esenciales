@@ -12,6 +12,7 @@ import {
     sendOutline, downloadOutline, checkmarkCircleOutline, closeCircleOutline,
     alertCircleOutline, trashOutline
 } from "ionicons/icons";
+import jsPDF from 'jspdf';
 import Navbar from "../components/Navbar";
 import './DetalleSolicitud.scss';
 
@@ -64,12 +65,16 @@ const DetalleSolicitud: React.FC = () => {
             }
         };
         cargarDesdeApi();
-    }, [id]);
+    }, [id, esAdmin, presentToast]);
 
-    // Cargar mensajes
+    // Cargar mensajes con polling cada 5 segundos
     useEffect(() => {
         if (!id) return;
+        let cargando = false;
         const cargarMensajes = async () => {
+            if (cargando) return;
+            cargando = true;
+            setLoadingMensajes(true);
             try {
                 const token = localStorage.getItem('token');
                 const respuesta = await fetch(`http://localhost:3000/api/solicitud/${id}/mensajes`, {
@@ -79,24 +84,20 @@ const DetalleSolicitud: React.FC = () => {
                     const data = await respuesta.json();
                     setMensajes(data);
                 }
+            } catch (error) {
+                console.error('Error al cargar mensajes:', error);
             } finally {
                 setLoadingMensajes(false);
+                cargando = false;
             }
         };
 
-        let cargando = false;
-        const cargarConGuarda = async () => {
-            if (cargando) return;
-            cargando = true;
-            await cargarMensajes();
-            cargando = false;
-        };
-
-        cargarConGuarda();
-        const intervalo = setInterval(cargarConGuarda, 1000);
+        cargarMensajes();
+        const intervalo = setInterval(cargarMensajes, 5000); // cada 5 segundos
         return () => clearInterval(intervalo);
     }, [id]);
 
+    // Enviar mensaje
     const handleEnviarMensaje = async () => {
         if (!nuevoMensaje.trim()) {
             presentToast({ message: 'El mensaje no puede estar vacío', duration: 2000, color: 'warning' });
@@ -115,7 +116,6 @@ const DetalleSolicitud: React.FC = () => {
             });
             if (respuesta.ok) {
                 const data = await respuesta.json();
-                // Agregar el nuevo mensaje a la lista localmente
                 setMensajes(prev => [...prev, {
                     id: data.data.id,
                     contenido: nuevoMensaje,
@@ -133,6 +133,7 @@ const DetalleSolicitud: React.FC = () => {
         }
     };
 
+    // Cambiar estado (desde select)
     const handleCambiarEstado = async () => {
         try {
             setActualizandoEstado(true);
@@ -156,16 +157,19 @@ const DetalleSolicitud: React.FC = () => {
         }
     };
 
+    // Aprobar directamente
     const handleAprobar = async () => {
         setNuevoEstado('aprobada');
         await handleCambiarEstadoDirecto('aprobada');
     };
 
+    // Rechazar directamente
     const handleRechazar = async () => {
         setNuevoEstado('rechazada');
         await handleCambiarEstadoDirecto('rechazada');
     };
 
+    // Cambiar estado directo (para aprobar/rechazar)
     const handleCambiarEstadoDirecto = async (estado: string) => {
         try {
             setActualizandoEstado(true);
@@ -187,6 +191,50 @@ const DetalleSolicitud: React.FC = () => {
             }
         } finally {
             setActualizandoEstado(false);
+        }
+    };
+
+    // ✅ NUEVO: Descargar Resolución en PDF (RF7)
+    const descargarResolucion = () => {
+        if (!solicitud || solicitud.estado !== 'aprobada') {
+            presentToast({ message: 'Solo se puede descargar resolución para solicitudes aprobadas', duration: 2000, color: 'warning' });
+            return;
+        }
+
+        try {
+            const doc = new jsPDF();
+            const idVisual = formatearIdVisual(solicitud.id, solicitud.fecha_creacion);
+
+            doc.setFontSize(18);
+            doc.text('RESOLUCIÓN DE PATENTE MUNICIPAL', 20, 20);
+            doc.setFontSize(12);
+            doc.text(`ID Solicitud: ${idVisual}`, 20, 40);
+            doc.text(`Negocio: ${solicitud.razon_social || 'No especificado'}`, 20, 50);
+            doc.text(`Tipo: ${solicitud.tipo_patente || 'No especificado'}`, 20, 60);
+            doc.text(`Giro: ${solicitud.giro || 'No especificado'}`, 20, 70);
+            doc.text(`Dirección: ${solicitud.direccion || 'No especificada'}`, 20, 80);
+
+            // ✅ VALIDAR que rut_comercial exista
+            const rut_comercial = solicitud.rut_comercial || 'No especificado';
+            doc.text(`RUT Comercial: ${rut_comercial}`, 20, 90);
+
+            doc.text(`Fecha Solicitud: ${new Date(solicitud.fecha_creacion).toLocaleDateString('es-CL')}`, 20, 100);
+            doc.text(`Estado: APROBADA`, 20, 110);
+
+            const ciudadanoNombre = solicitud.ciudadano_nombre || 'No disponible';
+            const ciudadanoRut = solicitud.ciudadano_rut || 'No disponible';
+            doc.text(`Solicitante: ${ciudadanoNombre} - RUT: ${ciudadanoRut}`, 20, 120);
+
+            const ciudadanoEmail = solicitud.ciudadano_email || 'No disponible';
+            doc.text(`Email: ${ciudadanoEmail}`, 20, 130);
+            doc.text(`Fecha de emisión: ${new Date().toLocaleDateString('es-CL')}`, 20, 150);
+            doc.text('Esta resolución es válida por 1 año a partir de la fecha de emisión.', 20, 170);
+            doc.save(`resolucion_${idVisual}.pdf`);
+
+            presentToast({ message: 'PDF descargado correctamente', duration: 2000, color: 'success' });
+        } catch (error) {
+            console.error('Error al generar PDF:', error);
+            presentToast({ message: 'Error al generar el PDF', duration: 2000, color: 'danger' });
         }
     };
 
@@ -321,7 +369,6 @@ const DetalleSolicitud: React.FC = () => {
                                         </IonCardTitle>
                                     </IonCardHeader>
                                     <IonCardContent>
-                                        {/* Lista de mensajes */}
                                         <div className="messages-container">
                                             {loadingMensajes ? (
                                                 <div className="ion-text-center"><IonSpinner /></div>
@@ -346,7 +393,6 @@ const DetalleSolicitud: React.FC = () => {
                                             )}
                                         </div>
 
-                                        {/* Caja para escribir nuevo mensaje */}
                                         <div className="divider"></div>
                                         <div className="new-message-box">
                                             <p className="reply-label">
@@ -382,7 +428,7 @@ const DetalleSolicitud: React.FC = () => {
                             {/* Sidebar */}
                             <IonCol size="12" sizeLg="4" className="col-sidebar">
 
-                                {/* Panel admin - AHORA FUNCIONAL */}
+                                {/* Panel admin - FUNCIONAL */}
                                 {esAdmin && (
                                     <IonCard className="detalle-card admin-actions-card">
                                         <IonCardHeader><IonCardTitle>Acciones de Administrador</IonCardTitle></IonCardHeader>
@@ -431,6 +477,24 @@ const DetalleSolicitud: React.FC = () => {
                                                 }
                                             }}>
                                                 <IonIcon icon={trashOutline} slot="start" /> Eliminar Solicitud
+                                            </IonButton>
+                                            {/* ✅ NUEVO: Botón de descarga PDF (RF7) - solo si aprobada */}
+                                            {solicitud.estado === 'aprobada' && (
+                                                <IonButton expand="block" fill="outline" color="success" className="mt-2" onClick={descargarResolucion}>
+                                                    <IonIcon icon={downloadOutline} slot="start" /> Descargar Resolución (PDF)
+                                                </IonButton>
+                                            )}
+                                        </IonCardContent>
+                                    </IonCard>
+                                )}
+
+                                {/* Si el ciudadano ve la solicitud y está aprobada, también puede descargar PDF */}
+                                {!esAdmin && solicitud.estado === 'aprobada' && (
+                                    <IonCard className="detalle-card">
+                                        <IonCardHeader><IonCardTitle>Resolución</IonCardTitle></IonCardHeader>
+                                        <IonCardContent>
+                                            <IonButton expand="block" fill="outline" color="success" onClick={descargarResolucion}>
+                                                <IonIcon icon={downloadOutline} slot="start" /> Descargar Resolución (PDF)
                                             </IonButton>
                                         </IonCardContent>
                                     </IonCard>
