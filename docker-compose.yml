@@ -31,6 +31,7 @@ services:
       DB_PORT: 5432
       PORT: ${PORT}
       JWT_SECRET: ${JWT_SECRET}
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN}
     ports:
       - "3000:3000"
     volumes:

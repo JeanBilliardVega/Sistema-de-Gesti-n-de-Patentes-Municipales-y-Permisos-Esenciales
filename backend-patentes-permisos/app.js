@@ -5,11 +5,41 @@ const jwt = require('jsonwebtoken');
 const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
+const helmet = require('helmet');
+const rateLimit = require('express-rate-limit');
+const { body, validationResult } = require('express-validator');
 const app = express();
-app.use(express.json());
-app.use(cors());
+app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
+app.use(cors({
+    origin: origenesPermitidos,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization']
+}));
+app.use(express.json({ limit: '1mb' }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-/* Si lo cambian que sea distinto al front */
+const origenesPermitidos = (process.env.FRONTEND_ORIGIN || 'http://localhost:8100,http://localhost:5173,http://localhost:8101').split(',');
+const limitadorGeneral = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 300,
+    standardHeaders: true,
+    legacyHeaders: false
+});
+app.use(limitadorGeneral);
+const limitadorAuth = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 20,
+    message: { error: 'Demasiados intentos. Intente nuevamente más tarde.' },
+    standardHeaders: true,
+    legacyHeaders: false
+});
+
+const manejarValidacion = (req, res, next) => {
+    const errores = validationResult(req);
+    if (!errores.isEmpty()) {
+        return res.status(400).json({ error: errores.array()[0].msg });
+    }
+    next();
+};
 const port = process.env.PORT || 3000;
 /* Conexion db. En Docker estas variables vienen de docker-compose.yml/.env.
    Los valores por defecto permiten ejecutar el backend sin Docker (local). */
@@ -23,11 +53,42 @@ const db = new Pool({
 const s = 10;
 const clave_token = process.env.JWT_SECRET || 'clavesecretasupersecreta';
 
+const validarRegistro = [
+    body('nombre').trim().notEmpty().withMessage('El nombre es obligatorio').isLength({ max: 100 }).withMessage('El nombre es demasiado largo'),
+    body('rut').trim().matches(/^[0-9.]+-[0-9kK]$/).withMessage('El RUT no tiene un formato valido'),
+    body('email').trim().isEmail().withMessage('El email no es valido').normalizeEmail(),
+    body('region').trim().notEmpty().withMessage('La region es obligatoria').escape(),
+    body('comuna').trim().notEmpty().withMessage('La comuna es obligatoria').escape(),
+    body('password').isLength({ min: 6 }).withMessage('La contraseña debe tener al menos 6 caracteres')
+];
+
+const validarLogin = [
+    body('rut').trim().notEmpty().withMessage('RUT o email no valido'),
+    body('password').notEmpty().withMessage('RUT o email no valido')
+];
+
+const validarSolicitud = [
+    body('razonSocial').trim().notEmpty().withMessage('La razon social es obligatoria').isLength({ max: 255 }),
+    body('rutComercial').trim().notEmpty().withMessage('El RUT comercial es obligatorio'),
+    body('tipoPatente').trim().notEmpty().withMessage('El tipo de patente es obligatorio'),
+    body('giro').trim().notEmpty().withMessage('El giro es obligatorio').isLength({ max: 255 }),
+    body('direccion').trim().notEmpty().withMessage('La direccion es obligatoria').isLength({ max: 255 }),
+    body('rolAvaluo').trim().notEmpty().withMessage('El rol de avaluo es obligatorio'),
+    body('telefono').trim().notEmpty().withMessage('El telefono es obligatorio'),
+    body('rutDueno').trim().notEmpty().withMessage('El RUT del dueno es obligatorio'),
+    body('descripcion').optional({ checkFalsy: true }).trim().isLength({ max: 1000 }).escape()
+];
+
+const validarMensaje = [
+    body('contenido').trim().notEmpty().withMessage('El mensaje no puede estar vacio')
+        .isLength({ max: 1000 }).withMessage('El mensaje es demasiado largo').escape()
+];
+
 app.get('/hola', (req, res) => {
     res.send('Hola mundo');
 });
 
-app.post('/api/registrar', async(req, res) => {
+app.post('/api/registrar', limitadorAuth, validarRegistro, manejarValidacion, async(req, res) => {
     const info = req.body || {};
 
     /* Verificar que se hallan completado todos los campos, se aceptaran los temrinos y condiciones, y que coincidan las contrasenas*/
@@ -60,7 +121,7 @@ app.post('/api/registrar', async(req, res) => {
     }
 });
 
-app.post('/api/iniciar_sesion', async(req, res) => {
+app.post('/api/iniciar_sesion', limitadorAuth, validarLogin, manejarValidacion, async(req, res) => {
     const info = req.body || {};
 
     if (!info.rut || !info.password) {
@@ -161,7 +222,7 @@ const upload = multer({
     }
 });
 
-app.post('/api/ciudadano/crear_solicitud', upload.array('documentos', 10), async (req, res) => {
+app.post('/api/ciudadano/crear_solicitud', upload.array('documentos', 10), validarSolicitud, manejarValidacion, async (req, res) => {
     const info = req.body || {};
     const archivos = req.files || [];
 
@@ -398,7 +459,7 @@ app.put('/api/funcionario/solicitud/:id/estado', verificarToken, async (req, res
 });
 
 // POST - Enviar mensaje (admin y ciudadano)
-app.post('/api/solicitud/:id/mensaje', verificarToken, async (req, res) => {
+app.post('/api/solicitud/:id/mensaje', verificarToken, validarMensaje, manejarValidacion, async (req, res) => {
     const { contenido } = req.body;
     const { id } = req.params;
     if (!contenido || contenido.trim() === '') {
