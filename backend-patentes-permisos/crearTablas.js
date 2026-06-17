@@ -1,11 +1,11 @@
 const { Pool } = require('pg');
 
 const pool = new Pool({
-  user: 'admin',
-  password: '1234',
-  host: '127.0.0.1',
-  port: 5432,
-  database: 'db_patentes_permisos'
+  user: process.env.DB_USER || 'admin',
+  password: process.env.DB_PASSWORD || '1234',
+  host: process.env.DB_HOST || '127.0.0.1',
+  port: process.env.DB_PORT || 5432,
+  database: process.env.DB_NAME || 'db_patentes_permisos'
 });
 
 const crearTablas = async () => {

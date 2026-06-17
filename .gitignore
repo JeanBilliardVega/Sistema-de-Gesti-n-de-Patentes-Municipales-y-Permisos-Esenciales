@@ -1,0 +1,9 @@
+# Variables de entorno (no subir secretos)
+.env
+
+# Dependencias
+node_modules/
+
+# Logs
+*.log
+npm-debug.log*

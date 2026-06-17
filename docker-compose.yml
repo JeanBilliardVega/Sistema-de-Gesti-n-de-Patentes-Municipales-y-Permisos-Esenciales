@@ -1,0 +1,55 @@
+# Levantar con  docker compose up --build
+services:
+  db:
+    image: postgres:15.6
+    container_name: patentes_db
+    restart: always
+    environment:
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: ${DB_NAME}
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER} -d ${DB_NAME}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend-patentes-permisos
+    container_name: patentes_backend
+    restart: always
+    environment:
+      DB_USER: ${DB_USER}
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_NAME: ${DB_NAME}
+      DB_HOST: db
+      DB_PORT: 5432
+      PORT: ${PORT}
+      JWT_SECRET: ${JWT_SECRET}
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend-patentes-permisos/uploads:/app/uploads
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./sistema-patentes-permisos
+      args:
+        VITE_API_BASE_URL: ${VITE_API_BASE_URL}
+    container_name: patentes_frontend
+    restart: always
+    ports:
+      - "8100:80"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:

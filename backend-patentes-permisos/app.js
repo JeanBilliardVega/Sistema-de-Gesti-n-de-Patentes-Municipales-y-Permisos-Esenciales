@@ -10,17 +10,18 @@ app.use(express.json());
 app.use(cors());
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 /* Si lo cambian que sea distinto al front */
-const port = 3000;
-/* Conexion db, la informacion esta en docker-compose.yml */
+const port = process.env.PORT || 3000;
+/* Conexion db. En Docker estas variables vienen de docker-compose.yml/.env.
+   Los valores por defecto permiten ejecutar el backend sin Docker (local). */
 const db = new Pool({
-    user: 'admin',
-    password: '1234',
-    host: '127.0.0.1',
-    port: '5432',
-    database: 'db_patentes_permisos'
+    user: process.env.DB_USER || 'admin',
+    password: process.env.DB_PASSWORD || '1234',
+    host: process.env.DB_HOST || '127.0.0.1',
+    port: process.env.DB_PORT || '5432',
+    database: process.env.DB_NAME || 'db_patentes_permisos'
 })
 const s = 10;
-const clave_token = 'clavesecretasupersecreta';
+const clave_token = process.env.JWT_SECRET || 'clavesecretasupersecreta';
 
 app.get('/hola', (req, res) => {
     res.send('Hola mundo');

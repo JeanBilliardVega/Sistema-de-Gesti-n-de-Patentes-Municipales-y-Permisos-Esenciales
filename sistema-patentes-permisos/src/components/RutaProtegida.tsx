@@ -3,6 +3,7 @@ import { estaAutenticado, obtenerUsuario } from '../auth/Usuario';
 
 interface RutaProtegidaProps extends RouteProps {
     rol?: string;
+    children?: React.ReactNode;
 }
 
 const RutaProtegida: React.FC<RutaProtegidaProps> = ({ children, rol, ...rest }) => {

@@ -1,0 +1,8 @@
+node_modules
+dist
+.git
+.env
+cypress
+*.log
+Dockerfile
+.dockerignore
