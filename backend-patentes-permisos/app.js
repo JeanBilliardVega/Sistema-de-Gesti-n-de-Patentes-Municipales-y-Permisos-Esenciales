@@ -9,6 +9,7 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
 const app = express();
+const origenesPermitidos = (process.env.FRONTEND_ORIGIN || 'http://localhost:8100,http://localhost:5173,http://localhost:8101').split(',');
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors({
     origin: origenesPermitidos,
@@ -17,7 +18,6 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '1mb' }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
-const origenesPermitidos = (process.env.FRONTEND_ORIGIN || 'http://localhost:8100,http://localhost:5173,http://localhost:8101').split(',');
 const limitadorGeneral = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 300,
