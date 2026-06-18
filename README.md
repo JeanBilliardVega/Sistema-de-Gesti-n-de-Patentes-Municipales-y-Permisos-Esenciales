@@ -15,54 +15,57 @@ Aplicación móvil construida con **Ionic + React** (TypeScript) para reducir lo
 - [Node.js](https://nodejs.org/) v18 o superior
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/)
 - [Ionic CLI](https://ionicframework.com/docs/cli): `npm install -g @ionic/cli`
-- IDE recomendado: [WebStorm](https://www.jetbrains.com/webstorm/) o [Visual Studio Code](https://code.visualstudio.com/)
-
 ---
 ## Pasos para ejecutar el proyecto
 
-1. **Descargar el repositorio y extraerlo** en tu computadora.
-2. **Cambiar la terminal de PowerShell a CMD (Command Prompt)**.
-3. Abre dos terminales (Una para el backend y la base de datos, la otra para frontend) y ejecutar:
+Para desplegar el proyecto completo con un solo comando necesitamos Docker
 
-**Paso opcional (solo si no tienes Vite instalado):** 
-Durante la ejecución, si te pregunta si deseas instalar Vite, selecciona **Yes** y espera a que termine la instalación.
-
-### 1. Terminal 1: Base de datos (Docker) y Backend
-Primero accede a la carpeta backend-patentes-permisos
-```bash
-cd backend-patentes-permisos
-```
-#### 1.1. Base de datos (Docker)
-```bash
-docker-compose up -d
-node crearTablas.js
-```
-#### 1.2. Backend
-```bash
-npm install
-node app.js
-```
-
-### 2. Terminal 2: Frontend
-```bash
-cd sistema-patentes-permisos
-npm install
-ionic serve
-```
-## Acceso al panel del administrador (Se puede crear y utilizar una terminal 3 para realizar operaciones en la BD)
-
-Para crear un usuario administrador, registrar un usuario normal y luego
-cambiar su rol directamente en la base de datos:
-
-Primero accede a la base de datos
-```bash
-docker exec -it web_movil psql -U admin -d db_patentes_permisos
-```
-Luego cambia el rol del usuario X como admin
-```sql
-UPDATE usuarios SET rol = 'admin' WHERE rut = 'rut del usuario a cambiar';
-```
 ---
+
+### Despliegue completo con Docker
+
+Para levantar los **3 servicios** (base de datos PostgreSQL, backend/API y frontend), se
+utilizara `docker-compose`, usando un único comando desde la **raíz del proyecto**.
+
+**Requisito:** tener Docker Desktop instalado y en ejecución.
+
+1. **Descargar el repositorio y extraerlo** en tu computadora.
+2. Copiar el archivo de variables de entorno de ejemplo y renombrarlo a .env:
+   ```bash
+   copy .env.example .env
+   ```
+   (En Windows: `copy`, en Linux: `cp`). Puedes editar `.env` para cambiar
+   credenciales de la base de datos, url, el `JWT_SECRET`, etc.
+3. Desde la raíz del proyecto, se contruye y levanta todo con:
+   ```bash
+   docker compose up --build
+   ```
+4. Para acceder a la aplicación en local se utiliza:
+   - **Frontend (app):** http://localhost:8100
+   - **Backend (API):** http://localhost:3000
+   - **Base de datos:** localhost:5432
+
+Las tablas de la base de datos se crean automáticamente al iniciar el backend.
+
+Para detener todo:
+```bash
+docker compose down
+```
+Para detener todo y eliminar la base de datos:
+```bash
+docker compose down -v
+```
+
+#### Servicios orquestados (docker-compose.yml en la raíz)
+
+| Servicio   | Imagen / Build                         | Puerto host → contenedor |
+|------------|----------------------------------------|--------------------------|
+| `db`       | postgres:15.6                          | 5432 → 5432              |
+| `backend`  | build `./backend-patentes-permisos`    | 3000 → 3000              |
+| `frontend` | build `./sistema-patentes-permisos` | 8100 → 80           |
+
+---
+
 ## EP 1.1: Requerimientos funcionales (7) y no funcionales (3)
 
 ### Requerimientos funcionales (RF)
@@ -149,3 +152,50 @@ y pruebas funcionales con Postman.
 ---
 ## EP2.7: Capturas de pruebas con Postman y Modelo ER
 Capturas de pruebas con Postman y el Modelo Entidad Relación se encuentra en la carpeta "otros".
+
+---
+## EF3: Seguridad avanzada en la API
+
+El backend implementa las siguientes medidas de seguridad:
+
+| Medida | Implementación |
+|--------|----------------|
+| **CORS seguro** | Restringido a los orígenes definidos en `FRONTEND_ORIGIN` (no usa `*`). Solo se permiten los métodos y cabeceras necesarios. |
+| **Cabeceras HTTP seguras** | `helmet` (Content-Security-Policy, HSTS, X-Frame-Options, X-Content-Type-Options, etc.) para mitigar XSS y clickjacking. |
+| **Rate limiting** | `express-rate-limit`: límite general por IP y un límite más estricto en `/api/registrar` e `/api/iniciar_sesion` contra ataques de fuerza bruta. |
+| **Validación y sanitización de entradas** | `express-validator` valida formato (email, RUT, longitudes) y sanitiza (`trim`, `escape`) los campos de texto en registro, login, creación de solicitudes y mensajes. |
+| **Sanitización global anti-XSS** | Middleware propio (`cleanXSS`) que aplica la librería `xss` a todos los strings del cuerpo de la petición, neutralizando scripts maliciosos. |
+| **Protección contra inyección SQL** | Todas las consultas usan **queries parametrizadas** (`$1, $2, ...`) con el driver `pg`. |
+| **Hash de contraseñas** | `bcrypt` (las contraseñas nunca se almacenan en texto plano). |
+| **Autenticación JWT** | Tokens firmados con expiración (4h) y middleware `verificarToken` en las rutas protegidas. |
+| **Diferenciación por roles** | Las rutas de funcionario validan `rol === 'admin'`. |
+| **Manejo seguro de credenciales** | Secretos (credenciales de BD, `JWT_SECRET`) gestionados por variables de entorno, fuera del código fuente. |
+
+---
+## EF5: Integración con servicio externo (correo Gmail)
+
+El sistema integra un **servicio externo de correo** mediante `nodemailer` y **Gmail**.
+Cuando el funcionario (admin) **aprueba una solicitud**, el ciudadano recibe
+automáticamente un **correo de notificación**. Esto implementa el requerimiento
+funcional **RF5 (notificaciones)**.
+
+**Características de la integración:**
+- **Pertinente al problema:** notifica al ciudadano cuando su trámite municipal es aprobado.
+- **Configuración por variables de entorno:** las credenciales (`EMAIL_USER`, `EMAIL_PASS`) nunca están en el código.
+- **Manejo de errores:** el envío está protegido con `try/catch`; si falla, se registra el error y **no se interrumpe** la actualización de estado.
+
+**Variables de entorno (en `.env`):**
+
+| Variable | Descripción |
+|----------|-------------|
+| `EMAIL_USER` | Cuenta de Gmail desde la que se envían los correos (ej. `tucorreo@gmail.com`) |
+| `EMAIL_PASS` | **Contraseña de aplicación** de Gmail (no la contraseña normal de la cuenta) |
+
+**Cómo obtener la contraseña de aplicación de Gmail:**
+1. Activar la **verificación en 2 pasos** en tu cuenta de Google (Seguridad → Verificación en 2 pasos).
+2. Ir a [myaccount.google.com/apppasswords](https://myaccount.google.com/apppasswords).
+3. Generar una contraseña de aplicación (16 caracteres) y copiarla.
+4. Poner tu correo en `EMAIL_USER` y la contraseña generada en `EMAIL_PASS` dentro del `.env`.
+5. Reiniciar el backend: `docker compose up -d --build backend`.
+
+> Si `EMAIL_USER` / `EMAIL_PASS` quedan vacías, la aplicación funciona igual: solo se registrará un error en consola al intentar enviar el correo, sin afectar la operación.
