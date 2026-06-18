@@ -34,29 +34,6 @@ const cleanXSS = (req, res, next) => {
 };
 app.use(cleanXSS);
 
-const corsOptions = {
-    origin: (origin, callback) => {
-        const whitelist = process.env.ALLOWED_ORIGINS.split(',');
-        if (whitelist.indexOf(origin) !== -1 || !origin) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    optionsSuccessStatus: 200
-};
-app.use(cors(corsOptions));
-
-app.use(helmet.contentSecurityPolicy({
-    directives: {
-        defaultSrc: ["'self'"],
-        scriptSrc: ["'self'"],
-        styleSrc: ["'self'", "https://fonts.googleapis.com"],
-    },
-}));
-
 const limitadorGeneral = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 300,
@@ -80,8 +57,6 @@ const manejarValidacion = (req, res, next) => {
     next();
 };
 const port = process.env.PORT || 3000;
-/* Conexion db. En Docker estas variables vienen de docker-compose.yml/.env.
-   Los valores por defecto permiten ejecutar el backend sin Docker (local). */
 const db = new Pool({
     user: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
@@ -416,7 +391,6 @@ app.get('/api/ciudadano/solicitud/:id', verificarToken, async (req, res) => {
     }
 });
 
-// Endpoint para el administrador
 app.get('/api/funcionario/todas_solicitudes', verificarToken, async (req, res) => {
     if (req.usuario.rol !== 'admin') {
         return res.status(403).json({ error: 'Acceso denegado. Requiere privilegios de administrador.' });
@@ -608,4 +582,3 @@ app.use((err, req, res, next) => {
 app.listen(port, () => {
     console.log('Servidor corriendo en el puerto ' + port);
 });
-
