@@ -1,4 +1,6 @@
+require('dotenv').config();
 const express = require('express');
+const nodemailer = require('nodemailer');
 const { Pool } = require('pg');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -6,6 +8,7 @@ const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
 const helmet = require('helmet');
+const xss = require('xss');
 const rateLimit = require('express-rate-limit');
 const { body, validationResult } = require('express-validator');
 const app = express();
@@ -18,6 +21,42 @@ app.use(cors({
 }));
 app.use(express.json({ limit: '1mb' }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
+
+const cleanXSS = (req, res, next) => {
+    if (req.body) {
+        for (let key in req.body) {
+            if (typeof req.body[key] === 'string') {
+                req.body[key] = xss(req.body[key]);
+            }
+        }
+    }
+    next();
+};
+app.use(cleanXSS);
+
+const corsOptions = {
+    origin: (origin, callback) => {
+        const whitelist = process.env.ALLOWED_ORIGINS.split(',');
+        if (whitelist.indexOf(origin) !== -1 || !origin) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    optionsSuccessStatus: 200
+};
+app.use(cors(corsOptions));
+
+app.use(helmet.contentSecurityPolicy({
+    directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: ["'self'"],
+        styleSrc: ["'self'", "https://fonts.googleapis.com"],
+    },
+}));
+
 const limitadorGeneral = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 300,
@@ -44,14 +83,26 @@ const port = process.env.PORT || 3000;
 /* Conexion db. En Docker estas variables vienen de docker-compose.yml/.env.
    Los valores por defecto permiten ejecutar el backend sin Docker (local). */
 const db = new Pool({
-    user: process.env.DB_USER || 'admin',
-    password: process.env.DB_PASSWORD || '1234',
-    host: process.env.DB_HOST || '127.0.0.1',
-    port: process.env.DB_PORT || '5432',
-    database: process.env.DB_NAME || 'db_patentes_permisos'
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    host: process.env.DB_HOST,
+    port: process.env.DB_PORT,
+    database: process.env.DB_NAME
 })
 const s = 10;
-const clave_token = process.env.JWT_SECRET || 'clavesecretasupersecreta';
+if (!process.env.JWT_SECRET) {
+    console.error("CRITICAL: JWT_SECRET no está definido en las variables de entorno.");
+    process.exit(1);
+}
+const clave_token = process.env.JWT_SECRET;
+
+const transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS
+    }
+});
 
 const validarRegistro = [
     body('nombre').trim().notEmpty().withMessage('El nombre es obligatorio').isLength({ max: 100 }).withMessage('El nombre es demasiado largo'),
@@ -171,7 +222,7 @@ const verificarToken = (req, res, next) => {
     if (!autorizacion) {
         return res.status(403).json({error: 'Acceso denegado, falta de credenciales'});
     }
-    
+
     const token = autorizacion.split(' ')[1];
     if (!token) {
         return res.status(403).json({error: 'Token invalido'});
@@ -372,27 +423,19 @@ app.get('/api/funcionario/todas_solicitudes', verificarToken, async (req, res) =
     }
 
     try {
-        const peticion = await db.query(
-            `SELECT s.*,
-                    u.nombre  AS ciudadano_nombre,
-                    u.rut     AS ciudadano_rut,
-                    u.email   AS ciudadano_email,
-                    u.comuna  AS ciudadano_comuna
-             FROM solicitudes s
-                      JOIN usuarios u ON s.usuario_id = u.id
-             ORDER BY s.id DESC`
-        );
-
-        const solicitudes = peticion.rows;
-        for (let sol of solicitudes) {
-            const docs = await db.query(
-                `SELECT id, nombre, ruta FROM documentos_solicitud WHERE solicitud_id = $1`,
-                [sol.id]
-            );
-            sol.documentos = docs.rows;
-        }
-
-        return res.status(200).json(solicitudes);
+        const query = `
+            SELECT s.*, 
+                   u.nombre as ciudadano_nombre, 
+                   u.rut as ciudadano_rut,
+                   COALESCE(json_agg(d.*) FILTER (WHERE d.id IS NOT NULL), '[]') as documentos
+            FROM solicitudes s
+            JOIN usuarios u ON s.usuario_id = u.id
+            LEFT JOIN documentos_solicitud d ON s.id = d.solicitud_id
+            GROUP BY s.id, u.id
+            ORDER BY s.id DESC
+        `;
+        const { rows } = await db.query(query);
+        res.json(rows);
     } catch (error) {
         console.error('Error al obtener todas las solicitudes: ' + error);
         return res.status(500).json({ error: 'Error interno del servidor' });
@@ -451,9 +494,35 @@ app.put('/api/funcionario/solicitud/:id/estado', verificarToken, async (req, res
         if (resultado.rows.length === 0) {
             return res.status(404).json({ error: 'Solicitud no encontrada' });
         }
-        return res.status(200).json({ mensaje: 'Estado actualizado correctamente', solicitud: resultado.rows[0] });
+        const solicitudActualizada = resultado.rows[0];
+        if (estado === 'aprobada') {
+            try {
+                const userRes = await db.query(
+                    'SELECT email FROM usuarios WHERE id = $1',
+                    [solicitudActualizada.usuario_id]
+                );
+
+                if (userRes.rows.length > 0) {
+                    const emailDestino = userRes.rows[0].email;
+                    await transporter.sendMail({
+                        from: '"Municipalidad Santo Domingo" <no-reply@santodomingo.cl>',
+                        to: emailDestino,
+                        subject: `Solicitud ${id} Aprobada`,
+                        text: `Felicitaciones, tu solicitud ${id} ha sido aprobada exitosamente.`
+                    });
+                }
+            } catch (emailError) {
+                console.error('Error al enviar correo de notificación:', emailError);
+            }
+        }
+
+        return res.status(200).json({
+            mensaje: 'Estado actualizado correctamente',
+            solicitud: solicitudActualizada
+        });
+
     } catch (error) {
-        console.error('Error al actualizar estado:', error);
+        console.error('Error al procesar la actualización de estado:', error);
         return res.status(500).json({ error: 'Error interno del servidor' });
     }
 });
@@ -529,6 +598,11 @@ app.delete('/api/funcionario/solicitud/:id', verificarToken, async (req, res) =>
         console.error('Error al eliminar solicitud:', error);
         return res.status(500).json({ error: 'Error interno del servidor' });
     }
+});
+
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ error: 'Ocurrió un error inesperado en el servidor' });
 });
 
 app.listen(port, () => {
